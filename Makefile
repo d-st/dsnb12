@@ -36,16 +36,18 @@ tests:		all
 
 mytests:	all
 		@for i in Tests/*.spl ; do \
-		  echo ; \
 		  echo $$i:; \
-		  ./$(BIN) $$i ; \
+		  echo -n " - testing clean parsing: "; \
+		  ./$(BIN) $$i>/dev/null && echo "ok" || echo "failed"; \
+		  echo -n " - reference testing tokens: "; \
 		  ./$(BIN) --tokens $$i > tokens-my.txt ; \
 		  ./Tests/spl-reference --tokens $$i o > tokens-ref.txt ; \
-		  diff -q tokens-my.txt tokens-ref.txt ; \
+		  diff -q tokens-my.txt tokens-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm tokens-my.txt tokens-ref.txt ; \
+		  echo -n " - reference testing abstract syntax: "; \
 		  ./$(BIN) --absyn $$i > absyn-my.txt ; \
 		  ./Tests/spl-reference --absyn $$i o > absyn-ref.txt ; \
-		  diff -q absyn-my.txt absyn-ref.txt ; \
+		  diff -q absyn-my.txt absyn-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm absyn-my.txt absyn-ref.txt ; \
 		done
 		@echo

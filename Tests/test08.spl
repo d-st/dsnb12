@@ -1,7 +1,7 @@
 proc main(a: int) { // should fail, main() must have empty parameters
-  if(1 = 1) if(2=2);
+  if(1 = 1) if(2=2); else; // testing shift-reduce
 }
-
+// testing arbitrary definition order
 type x = int;
 proc a(a: x) {}
 type y = int;
