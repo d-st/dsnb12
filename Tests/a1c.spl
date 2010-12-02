@@ -1,0 +1,57 @@
+type A = array [5] of int;
+
+proc sortiere(ref x:A) {
+  // bubble sort
+  
+  var n: int;
+  var i: int;
+  var hilf: int;
+  var vertauscht: int;
+
+  n := 5; // Länge(x)
+  vertauscht := 1;
+
+
+  while(vertauscht = 1) {
+    vertauscht := 0;
+    i := 0;
+    while (i < n-1) {
+      if (x[i] > x[i+1]) {
+        hilf := x[i];
+        x[i] := x[i+1];
+        x[i+1] := hilf;
+        vertauscht := 1;
+      }
+      i := i+1;
+    }
+    n := n - 1;
+    if(n <= 1) {
+      vertauscht := 0;
+    }
+  }
+}
+
+proc main() {
+  var a:A;
+  var i: int;
+
+  i := 0;
+  while (i < 5) {
+    readi(a[i]);
+    i := i+1;
+  }
+ 
+  sortiere(a);
+
+  printc('\n');
+  printc('\n');
+  i := 0;
+  while (i < 5) {
+    printi(a[i]);
+    printc('\n');
+    i := i+1;
+  }
+
+}
+
+

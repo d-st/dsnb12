@@ -1,0 +1,19 @@
+proc summe(a:int, b:int, ref erg: int) {
+  erg := a+b;
+}
+
+proc main() {
+  var a: int;
+  var b: int;
+  var erg: int;
+
+  readi(a);
+  readi(b);
+ 
+  summe(a,b,erg);  
+
+  printi(erg);
+  printc('\n');
+}
+
+

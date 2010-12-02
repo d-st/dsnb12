@@ -1,0 +1,17 @@
+
+
+proc main() {
+  var i: int;
+  var color: int;
+  i := 255;
+  
+  clearAll(0x000f0f0f);
+  drawCircle(320, 240, 50, 0x00ffffff);
+  drawLine(270,190,370,190, 0x00ff0000);
+  drawLine(270,290,370,290, 0x0000ff00);
+  drawLine(270,190,270,290, 0x000000ff);
+  drawLine(370,190,370,290, 0x00ff00ff);
+
+}
+
+

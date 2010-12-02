@@ -1,0 +1,12 @@
+
+proc main() {
+  printc(' ');
+  printc('a');
+  printc('b');
+  printc(' ');
+  printc('c');
+  printc('d');
+  printc('\n');
+}
+
+

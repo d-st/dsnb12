@@ -1,0 +1,11 @@
+
+proc main() {
+  var x: int;
+
+  x := 2+43*3-4*2;
+
+  printi(x);
+  printc('\n');
+}
+
+

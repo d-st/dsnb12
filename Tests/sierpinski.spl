@@ -1,0 +1,137 @@
+//
+// sierpinski.spl
+//
+
+
+proc plot(ref px: int, ref py: int, x: int, y: int) {
+  var fromCol: int;
+  var fromRow: int;
+  var toCol: int;
+  var toRow: int;
+
+  fromCol := (px - 128) * 3 / 2 + 320;
+  fromRow := (py - 128) * 3 / 2 + 240;
+  toCol := (x - 128) * 3 / 2 + 320;
+  toRow := (y - 128) * 3 / 2 + 240;
+  drawLine(fromCol, fromRow, toCol, toRow, 0);
+  px := x;
+  py := y;
+}
+
+
+proc a(i: int, ref x: int, ref y: int, h: int, ref px: int, ref py: int) {
+  if (i > 0) {
+    a(i - 1, x, y, h, px, py);
+        x := x + h;
+        y := y - h;
+        plot(px, py, x, y);
+    b(i - 1, x, y, h, px, py);
+        x := x + 2 * h;
+        plot(px, py, x, y);
+    d(i - 1, x, y, h, px, py);
+        x := x + h;
+        y := y + h;
+        plot(px, py, x, y);
+    a(i - 1, x, y, h, px, py);
+  }
+}
+
+
+proc b(i: int, ref x: int, ref y: int, h: int, ref px: int, ref py: int) {
+  if (i > 0) {
+    b(i - 1, x, y, h, px, py);
+        x := x - h;
+        y := y - h;
+        plot(px, py, x, y);
+    c(i - 1, x, y, h, px, py);
+        y := y - 2 * h;
+        plot(px, py, x, y);
+    a(i - 1, x, y, h, px, py);
+        x := x + h;
+        y := y - h;
+        plot(px, py, x, y);
+    b(i - 1, x, y, h, px, py);
+  }
+}
+
+
+proc c(i: int, ref x: int, ref y: int, h: int, ref px: int, ref py: int) {
+  if (i > 0) {
+    c(i - 1, x, y, h, px, py);
+        x := x - h;
+        y := y + h;
+        plot(px, py, x, y);
+    d(i - 1, x, y, h, px, py);
+        x := x - 2 * h;
+        plot(px, py, x, y);
+    b(i - 1, x, y, h, px, py);
+        x := x - h;
+        y := y - h;
+        plot(px, py, x, y);
+    c(i - 1, x, y, h, px, py);
+  }
+}
+
+
+proc d(i: int, ref x: int, ref y: int, h: int, ref px: int, ref py: int) {
+  if (i > 0) {
+    d(i - 1, x, y, h, px, py);
+        x := x + h;
+        y := y + h;
+        plot(px, py, x, y);
+    a(i - 1, x, y, h, px, py);
+        y := y + 2 * h;
+        plot(px, py, x, y);
+    c(i - 1, x, y, h, px, py);
+        x := x - h;
+        y := y + h;
+        plot(px, py, x, y);
+    d(i - 1, x, y, h, px, py);
+  }
+}
+
+
+proc main() {
+  var x: int;
+  var y: int;
+  var h: int;
+  var i: int;
+  var x0: int;
+  var y0: int;
+  var px: int;
+  var py: int;
+  var beige: int;
+
+  beige := 245 * 65536 + 245 * 256 + 220;
+  clearAll(beige);
+  i := 0;
+  h := 256 / 4;
+  x0 := 2 * h;
+  y0 := 3 * h;
+  while (i # 4) {
+    i := i + 1;
+    x0 := x0 - h;
+    h := h / 2;
+    y0 := y0 + h;
+    x := x0;
+    y := y0;
+    px := x;
+    py := y;
+    a(i, x, y, h, px, py);
+        x := x + h;
+        y := y - h;
+        plot(px, py, x, y);
+    b(i, x, y, h, px, py);
+        x := x - h;
+        y := y - h;
+        plot(px, py, x, y);
+    c(i, x, y, h, px, py);
+        x := x - h;
+        y := y + h;
+        plot(px, py, x, y);
+    d(i, x, y, h, px, py);
+        x := x + h;
+        y := y + h;
+        plot(px, py, x, y);
+  }
+}

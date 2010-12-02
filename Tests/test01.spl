@@ -1,0 +1,11 @@
+
+proc main() {
+  var a: int;
+
+  a := 0x0f;
+
+  printi(a);
+  printc('\n');
+}
+
+
