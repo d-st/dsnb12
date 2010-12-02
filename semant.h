@@ -6,7 +6,7 @@
 #ifndef _SEMANT_H_
 #define _SEMANT_H_
 
-
+Type *checkNode(Absyn *node, Table *symtab);
 Table *check(Absyn *program, boolean showSymbolTables);
 
 

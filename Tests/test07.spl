@@ -10,8 +10,8 @@ type myInt = int;
   type typ2 = typ1;
 
 //Beispiel fuer verschiedene Typen:
-  type typ1 = array [5] of int;
-  type typ2 = array [5] of int;
+  type typ3 = array [5] of int;
+  type typ4 = array [5] of int;
 proc main() {
   var x: int; // llalalala 
   var y: int;
@@ -25,7 +25,7 @@ var i: int; var j: int; var k: int;
   x:= 1234;
   x:=  0x1a2f3F4e;
   x:='a';
-  x:=x+'\n';
+  y:=x+'\n';
 
    v[3] := v[2] * 2;
 
@@ -36,16 +36,16 @@ while (x < 10) x := x + 1;
 
  { k := i; i := j; j := k; }
 
-  swap(n, m);
-  sum(3 * x + 5, 9 - y / 2, z);
+  swap(x, y);
+  sum(3 * x + 5, 9 - y / 2);
 
   x:=1;y:=1;
   b:=x;
   b:=-x;
   a:=3 + x * y;
   x:=(3 + x) * y;
-  x:=5 * -a[n-2];
-  if(i < n);
+  x:=5 * v[y-2];
+  if(i < y);
   if(b - 2 # a + 3);else;
   if(b - 2 # a + 3);else {}
   if(b - 2 # a + 3);else {;}
