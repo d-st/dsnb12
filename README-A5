@@ -1,0 +1,89 @@
+
+Programmieraufgabe
+==================
+
+Problemstellung
+---------------
+
+Durchfuehren der semantischen Analyse, Typpruefungen, Erkennen und
+Zurueckweisen von semantisch nicht korrekten SPL-Programmen.
+
+
+Vorgegebene Dateien
+-------------------
+
+README          -  die Beschreibung, die Sie gerade lesen
+main.c          -  das Hauptprogramm des entstehenden Compilers
+semant.h        -  Interface zur semantischen Analyse
+semant.c        -  die semantische Analyse: das ist Ihre Aufgabe
+table.h         -  Interface zur Symboltabelle
+table.c         -  die Symboltabelle
+types.h         -  Interface zur Repraesentation von Typen
+types.c         -  die Repraesentation von Typen
+
+
+Aufgaben
+--------
+
+1. Machen Sie sich anhand des Interfaces zur Repraesentation von Typen
+   mit der Handhabung von Typen vertraut. Vorschlag: Schreiben Sie einige
+   Typen in SPL auf und konstruieren Sie den entsprechenden Typgraphen,
+   sowohl auf dem Papier als auch in Form von Konstruktoraufrufen.
+
+2. Studieren Sie das Interface zur Symboltabelle. Vorschlag: Schreiben
+   Sie ein kleines Programm, das eine Symboltabelle anlegt, ein paar
+   Eintraege vornimmt und am Ende die Eintraege ausgeben laesst.
+   Machen Sie dasselbe auch mit einer mehrstufigen Symboltabelle.
+
+3. Schreiben Sie nun die semantische Analyse. In der Datei 'semant.c'
+   finden Sie dazu die noch leere Prozedur 'check' mit dem Prototyp
+   Table *check(Absyn *program, boolean showSymbolTables);
+   die Sie ausfuellen muessen. Die Kommentare im Rumpf der Prozedur
+   sollen Sie an die durchzufuehrenden Arbeiten erinnern. An der
+   Variablen 'program' haengt die Abstrakte Syntax des Programms.
+   Die Variable 'showSymbolTables' ist auf TRUE gesetzt, falls der
+   Benutzer des SPL-Compilers den Kommandozeilenschalter '--tables'
+   angegeben hat. Sie koennen diese Variable zum Steuern Ihrer Ausgabe
+   der Symboltabellen benutzen (das ist optional, empfiehlt sich aber
+   zu Debugging-Zwecken).
+   Um diese groessere Aufgabe etwas zu strukturieren, gehen Sie am
+   besten in zwei Schritten vor:
+   a) Semantische Analyse ohne Beruecksichtigung von Rekursion bzw.
+      Vorwaerts-Referenzen
+   b) Bewaeltigen von Vorwaerts-Referenzen durch Einfuehren von
+      zwei Durchlaeufen durch die Abstrakte Syntax
+
+4. Zur Ueberpruefung des Semantik-Moduls muessen Sie einen ganz neuen
+   Satz von Testprogrammen konstruieren. Jedes dieser Programme muss
+   gezielt einen semantischen Fehler enthalten. Dann koennen Sie
+   verifizieren, dass Ihr Semantik-Modul diesen Fehler erkennt und
+   eine geeignete Fehlermeldung ausgibt. Als Anhaltspunkt, was es
+   alles zu ueberpruefen gilt, folgt hier die Liste der semantischen
+   Fehler, die die Referenzimplementierung erkennt:
+       undefined type ... in line ...
+       ... is not a type in line ...
+       redeclaration of ... as type in line ...
+       parameter ... must be a reference parameter in line ...
+       redeclaration of ... as procedure in line ...
+       redeclaration of ... as parameter in line ...
+       redeclaration of ... as variable in line ...
+       assignment has different types in line ...
+       assignment requires integer variable in line ...
+       'if' test expression must be of type boolean in line ...
+       'while' test expression must be of type boolean in line ...
+       undefined procedure ... in line ...
+       call of non-procedure ... in line ...
+       procedure ... argument ... type mismatch in line ...
+       procedure ... argument ... must be a variable in line ...
+       procedure ... called with too few arguments in line ...
+       procedure ... called with too many arguments in line ...
+       expression combines different types in line ...
+       comparison requires integer operands in line ...
+       arithmetic operation requires integer operands in line ...
+       undefined variable ... in line ...
+       ... is not a variable in line ...
+       illegal indexing a non-array in line ...
+       illegal indexing with a non-integer in line ...
+       procedure 'main' is missing
+       'main' is not a procedure
+       procedure 'main' must not have any parameters
