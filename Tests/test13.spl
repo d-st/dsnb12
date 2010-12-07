@@ -1,0 +1,9 @@
+proc f_call(ref x: int, y: int) {}
+proc g_call() {}
+
+proc main() {
+  var a: array[2] of int;
+  f_call(a[0], a[1]);
+  g_call();
+}
+
