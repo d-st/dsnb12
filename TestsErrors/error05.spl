@@ -1,0 +1,6 @@
+proc x() {}
+
+proc main() {
+  x := 2; // Error: 'x' is not a variable
+}
+

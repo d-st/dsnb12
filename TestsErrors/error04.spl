@@ -1,0 +1,4 @@
+proc main() {
+  x := 1; // Error: undefined variable 'x' in line
+}
+
