@@ -17,8 +17,11 @@
 
 Type *checkOp(Absyn *node, Table *symtab) {
   Type *leftType, *rightType, *type;
+
   leftType  = checkNode(node->u.opExp.left,  symtab);
   rightType = checkNode(node->u.opExp.right, symtab);
+  type = NULL;
+
   if(leftType != rightType) error("expression combines different types in line %d", node->line);
   switch(node->u.opExp.op) {
     case ABSYN_OP_ADD:
@@ -42,12 +45,12 @@ Type *checkOp(Absyn *node, Table *symtab) {
 Type *checkSimpleVar(Absyn *node, Table *symtab) {
   Entry *entry;
   entry = lookup(symtab, node->u.simpleVar.name);
-  if(entry == NULL) error(""); // TODO
-  if(entry->kind != ENTRY_KIND_VAR) error(""); // TODO
+  if(entry == NULL) error("undefined variable '%s' in line %d", node->u.simpleVar.name, node->line);
+  if(entry->kind != ENTRY_KIND_VAR) error("'%s' is not a variable in line %d", node->u.simpleVar.name, node->line);
   return entry->u.varEntry.type;
 }
 
-Type *checkTypdecl(Absyn *node, Table *symtab) {
+Type *checkTypeDec(Absyn *node, Table *symtab) {
   Type *type;
   Entry *entry;
   type = checkNode(node->u.typeDec.ty, symtab);
@@ -55,6 +58,39 @@ Type *checkTypdecl(Absyn *node, Table *symtab) {
   if(enter(symtab, node->u.typeDec.name, entry) == NULL) {
     error("redeclaration of '%s' in line %d", node->u.typeDec.name, node->line);
   }
+  return NULL;
+}
+
+Type *checkParDec(Absyn *node, Table *symtab) {
+  ParamTypes *paramTypes, *next;
+  Type *type;
+/*
+  return emptyParamTypes();
+  type = checkNode(node->u.parDec.ty, symtab);
+  next = NULL; // TODO
+  paramTypes = newParamTypes(type, node->u.parDec.isRef, next);
+  
+  return paramTypes;
+  
+  error("should never reach this");
+*/
+  return NULL;
+}
+
+Type *checkProcDec(Absyn *node, Table *symtab) {
+  ParamTypes *paramTypes;
+  Table *localSymtab;
+  Entry *entry;
+
+  localSymtab = newTable(symtab);
+  paramTypes = checkNode(node->u.procDec.params, localSymtab); // TODO: ParamTypes* = Type*
+  entry = newProcEntry(paramTypes, localSymtab);
+  if(enter(symtab, node->u.procDec.name, entry) == NULL) {
+    error("redeclaration of '%s' in line %d", node->u.procDec.name, node->line);
+  }
+  // TODO: eval node->u.procDec.decls
+  // TODO: eval node->u.procDec.body
+
   return NULL;
 }
 
@@ -67,6 +103,7 @@ Type *checkNode(Absyn *node, Table *symtab) {
     case ABSYN_ARRAYTY:
       checkArrayTy(node, symtab);
       break;
+*/
     case ABSYN_TYPEDEC:
       checkTypeDec(node, symtab);
       break;
@@ -76,6 +113,7 @@ Type *checkNode(Absyn *node, Table *symtab) {
     case ABSYN_PARDEC:
       checkParDec(node, symtab);
       break;
+/*
     case ABSYN_VARDEC:
       checkVarDec(node, symtab);
       break;
@@ -112,9 +150,13 @@ Type *checkNode(Absyn *node, Table *symtab) {
     case ABSYN_ARRAYVAR:
       checkArrayVar(node, symtab);
       break;
+*/
     case ABSYN_DECLIST:
-      checkDecList(node, symtab);
+      if(node->u.decList.isEmpty) break;
+      checkNode(node->u.decList.head, symtab);
+      checkNode(node->u.decList.tail, symtab);
       break;
+/*
     case ABSYN_STMLIST:
       checkStmList(node, symtab);
       break;
