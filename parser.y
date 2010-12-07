@@ -67,6 +67,7 @@ Absyn *progTree;
 %type<node>	parameter
 %type<node>	parameters
 %type<node>	parameters_list
+%type<node>	array
 %type<node>	lhs
 %type<node>	expr_inner
 %type<node>	expr_punkt
@@ -90,7 +91,7 @@ parameter		: IDENT COLON type_t
 			{ $$ = newParDec($2.line, newSym($2.val), $4, TRUE); }
 			;
 
-parameters_list		: parameter COMMA parameters_list
+parameters_list	: parameter COMMA parameters_list
 			{ $$ = newDecList($1, $3); }
 			| parameter
 			{ $$ = newDecList($1, emptyDecList()); }
@@ -102,10 +103,16 @@ parameters		: // nichts
 			{ $$ = $1; }
 			;
 
+array			: IDENT LBRACK expr RBRACK
+			{ $$ = newArrayVar($1.line, newSimpleVar($1.line, newSym($1.val)), $3); }
+			| array LBRACK expr RBRACK
+			{ $$ = newArrayVar($2.line, $1, $3); }
+			;
+
 lhs			: IDENT
 			{ $$ = newSimpleVar($1.line, newSym($1.val)); }
-			| IDENT LBRACK expr RBRACK
-			{ $$ = newArrayVar($1.line, newSimpleVar($1.line, newSym($1.val)), $3); }
+			| array
+			{ $$ = $1; }
 			;
 
 expr_inner		: LPAREN expr RPAREN
@@ -204,7 +211,7 @@ typedef			: TYPE IDENT EQ type_t SEMIC
 			{ $$ = newTypeDec($1.line, newSym($2.val), $4); }
 			;
 
-program			: // nichts
+program		: // nichts
 			{ $$ = emptyDecList(); }
 			| procdef program
 			{ $$ = newDecList($1, $2); }
