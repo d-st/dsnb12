@@ -15,26 +15,104 @@
 #include "table.h"
 #include "semant.h"
 
-Type *checkOp(Absyn *node, Table *symtab) {
+
+// modulglobale (interne) primitive typen
+Type *builtinType_int,
+     *builtinType_bool;
+
+Type *checkNameTy(Absyn *node, Table *symtab) {
+  
+  return NULL;
+}
+
+Type *checkArrayTy(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkVarDec(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkEmptyStm(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkCompStm(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkAssignStm(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkIfStm(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkWhileStm(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkCallStm(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkVarExp(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkIntExp(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkStmList(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+Type *checkExpList(Absyn *node, Table *symtab) {
+
+  return NULL;
+}
+
+
+Type *checkOpExp(Absyn *node, Table *symtab) {
   Type *leftType, *rightType, *type;
 
   leftType  = checkNode(node->u.opExp.left,  symtab);
   rightType = checkNode(node->u.opExp.right, symtab);
   type = NULL;
 
-  if(leftType != rightType) error("expression combines different types in line %d", node->line);
+  if(leftType != rightType) 
+    error("expression combines different types in line %d", node->line);
   switch(node->u.opExp.op) {
-    case ABSYN_OP_ADD:
-/*
-      if(leftType != int_builtin) error(""); // TODO
-      type = int_builtin;
-*/
+    case ABSYN_OP_EQU: // case fall-through, following cases same type
+    case ABSYN_OP_NEQ:
+    case ABSYN_OP_LST:
+    case ABSYN_OP_LSE:
+    case ABSYN_OP_GRT:
+    case ABSYN_OP_GRE:
+      if(leftType != builtinType_int) 
+        error("comparison requires integer operands in line %d", node->line);
+      type = builtinType_bool;
       break;
+    case ABSYN_OP_ADD: // case fall-through, following cases same type
     case ABSYN_OP_SUB:
-      break;
     case ABSYN_OP_MUL:
-      break;
     case ABSYN_OP_DIV:
+      if(leftType != builtinType_int) 
+        error("comparison requires integer operands in line %d", node->line);
+      type = builtinType_int;
       break;
     default:
       error("unknown node type %d in checkNode", node->type);
@@ -45,9 +123,17 @@ Type *checkOp(Absyn *node, Table *symtab) {
 Type *checkSimpleVar(Absyn *node, Table *symtab) {
   Entry *entry;
   entry = lookup(symtab, node->u.simpleVar.name);
-  if(entry == NULL) error("undefined variable '%s' in line %d", node->u.simpleVar.name, node->line);
-  if(entry->kind != ENTRY_KIND_VAR) error("'%s' is not a variable in line %d", node->u.simpleVar.name, node->line);
+  if(entry == NULL) 
+    error("undefined variable '%s' in line %d", node->u.simpleVar.name, node->line);
+  if(entry->kind != ENTRY_KIND_VAR) 
+    error("'%s' is not a variable in line %d", node->u.simpleVar.name, node->line);
   return entry->u.varEntry.type;
+}
+
+Type *checkArrayVar(Absyn *node, Table *symtab) {
+  if(checkNode(node->arrayVar.index) != builtinType_int)
+    error("illegal indexing with a non-integer in line %d", node->line);
+  return checkNode(node->arrayVar.var);
 }
 
 Type *checkTypeDec(Absyn *node, Table *symtab) {
@@ -96,14 +182,12 @@ Type *checkProcDec(Absyn *node, Table *symtab) {
 
 Type *checkNode(Absyn *node, Table *symtab) {
   switch (node->type) {
-/*
     case ABSYN_NAMETY:
       checkNameTy(node, symtab);
       break;
     case ABSYN_ARRAYTY:
       checkArrayTy(node, symtab);
       break;
-*/
     case ABSYN_TYPEDEC:
       checkTypeDec(node, symtab);
       break;
@@ -113,7 +197,6 @@ Type *checkNode(Absyn *node, Table *symtab) {
     case ABSYN_PARDEC:
       checkParDec(node, symtab);
       break;
-/*
     case ABSYN_VARDEC:
       checkVarDec(node, symtab);
       break;
@@ -150,20 +233,17 @@ Type *checkNode(Absyn *node, Table *symtab) {
     case ABSYN_ARRAYVAR:
       checkArrayVar(node, symtab);
       break;
-*/
     case ABSYN_DECLIST:
       if(node->u.decList.isEmpty) break;
       checkNode(node->u.decList.head, symtab);
       checkNode(node->u.decList.tail, symtab);
       break;
-/*
     case ABSYN_STMLIST:
       checkStmList(node, symtab);
       break;
     case ABSYN_EXPLIST:
       checkExpList(node, symtab);
       break;
-*/
     default:
       error("unknown node type %d in checkNode", node->type);
   }
@@ -176,20 +256,22 @@ Table *check(Absyn *program, boolean showSymbolTables) {
   globalTable = newTable(NULL);
 
   /* generate built-in types */
-  Type *int_builtin = newPrimitiveType("int");
+  builtinType_int  = newPrimitiveType("int");
+  builtinType_bool = newPrimitiveType("bool");
+
   Entry *exit_builtin = newProcEntry(emptyParamTypes(), newTable(globalTable));
-  Entry *time_builtin = newProcEntry(newParamTypes(int_builtin, TRUE, emptyParamTypes()), newTable(globalTable));
-  Entry *readi_builtin = newProcEntry(newParamTypes(int_builtin, TRUE, emptyParamTypes()), newTable(globalTable));
-  Entry *readc_builtin = newProcEntry(newParamTypes(int_builtin, TRUE, emptyParamTypes()), newTable(globalTable));
-  Entry *printi_builtin = newProcEntry(newParamTypes(int_builtin, FALSE, emptyParamTypes()), newTable(globalTable));
-  Entry *printc_builtin = newProcEntry(newParamTypes(int_builtin, FALSE, emptyParamTypes()), newTable(globalTable));
-  Entry *clearAll_builtin = newProcEntry(newParamTypes(int_builtin, FALSE, emptyParamTypes()), newTable(globalTable));
-  Entry *setPixel_builtin = newProcEntry(newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, emptyParamTypes()))), newTable(globalTable));
-  Entry *drawCircle_builtin = newProcEntry(newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, emptyParamTypes())))), newTable(globalTable));
-  Entry *drawLine_builtin = newProcEntry(newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, newParamTypes(int_builtin, FALSE, emptyParamTypes()))))), newTable(globalTable));
+  Entry *time_builtin = newProcEntry(newParamTypes(builtinType_int, TRUE, emptyParamTypes()), newTable(globalTable));
+  Entry *readi_builtin = newProcEntry(newParamTypes(builtinType_int, TRUE, emptyParamTypes()), newTable(globalTable));
+  Entry *readc_builtin = newProcEntry(newParamTypes(builtinType_int, TRUE, emptyParamTypes()), newTable(globalTable));
+  Entry *printi_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
+  Entry *printc_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
+  Entry *clearAll_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
+  Entry *setPixel_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes()))), newTable(globalTable));
+  Entry *drawCircle_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes())))), newTable(globalTable));
+  Entry *drawLine_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes()))))), newTable(globalTable));
 
   /* setup global symbol table */
-  enter(globalTable, newSym("int"), newTypeEntry(int_builtin));
+  enter(globalTable, newSym("int"), newTypeEntry(builtinType_int));
   enter(globalTable, newSym("exit"), exit_builtin);
   enter(globalTable, newSym("time"), time_builtin);
   enter(globalTable, newSym("readi"), readi_builtin);

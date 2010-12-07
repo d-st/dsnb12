@@ -1,0 +1,7 @@
+proc main() {
+  var a: int;
+  
+  if((a#a) < (a>a)); // Error: comparison requires integer operands in line 4
+
+}
+

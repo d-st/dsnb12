@@ -6,6 +6,7 @@
 #ifndef _ABSYN_H_
 #define _ABSYN_H_
 
+#include "types.h"
 
 #define ABSYN_NAMETY		0
 #define ABSYN_ARRAYTY		1
@@ -41,6 +42,7 @@
 
 
 typedef struct absyn {
+  Type *type_t;
   int type;
   int line;
   union {
