@@ -10,9 +10,12 @@
 #include "common.h"
 #include "utils.h"
 #include "sym.h"
+#include "types.h"
 #include "absyn.h"
 #include "scanner.h"
 #include "parser.h"
+#include "table.h"
+#include "semant.h"
 
 
 #define VERSION		"1.1"
@@ -29,6 +32,7 @@ static void help(char *myself) {
   printf("Options:\n");
   printf("  --tokens         show stream of tokens\n");
   printf("  --absyn          show abstract syntax\n");
+  printf("  --tables         show symbol tables\n");
   printf("  --version        show compiler version\n");
   printf("  --help           show this help\n");
 }
@@ -39,12 +43,15 @@ int main(int argc, char *argv[]) {
   char *inFileName;
   boolean optionTokens;
   boolean optionAbsyn;
+  boolean optionTables;
   int token;
+  Table *globalTable;
 
   /* analyze command line */
   inFileName = NULL;
   optionTokens = FALSE;
   optionAbsyn = FALSE;
+  optionTables = FALSE;
   for (i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
       /* option */
@@ -53,6 +60,9 @@ int main(int argc, char *argv[]) {
       } else
       if (strcmp(argv[i], "--absyn") == 0) {
         optionAbsyn = TRUE;
+      } else
+      if (strcmp(argv[i], "--tables") == 0) {
+        optionTables = TRUE;
       } else
       if (strcmp(argv[i], "--version") == 0) {
         version(argv[0]);
@@ -94,5 +104,6 @@ int main(int argc, char *argv[]) {
     showAbsyn(progTree);
     exit(0);
   }
+  globalTable = check(progTree, optionTables);
   return 0;
 }

@@ -1,0 +1,4 @@
+*.o
+parser.tab.*
+spl
+lex.yy.*

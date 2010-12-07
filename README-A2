@@ -1,0 +1,88 @@
+
+Uebungen
+========
+
+1. Es sei das folgende kleine Programm in C gegeben:
+
+   int max(int i, int j)
+   /* liefert das Maximum der Zahlen i und j */
+   {
+     return i>j?i:j;
+   }
+
+   Geben Sie die Token an, die ein Scanner fuer C liefern wuerde.
+
+2. Benutzen Sie Thompson's Konstruktion, um fuer die folgenden
+   regulaeren Ausdruecke NEAs zu erstellen:
+   a) (a|b)*
+   b) (a*|b*)*
+   c) (a?b*)*
+   d) (a|b)*abb(a|b)*
+   Geben Sie an, welche Bewegungen jeder Automat macht, wenn der
+   Eingabestring ababbab abgearbeitet wird.
+
+3. Konvertieren Sie die NEAs aus Uebung 2 in DEAs. Geben Sie an,
+   welche Bewegungen jeder Automat macht, wenn der Eingabestring
+   aababbab abgearbeitet wird.
+
+
+Programmieraufgabe
+==================
+
+Problemstellung
+---------------
+
+Konstruktion des Scanners fuer den SPL-Compiler.
+
+
+Vorgegebene Dateien
+-------------------
+
+README          -  die Beschreibung, die Sie gerade lesen
+Makefile        -  ein Makefile zur automatischen Uebersetzung
+Tests           -  ein Subdirectory, in dem Sie Ihre Tests aufbewahren
+common.h        -  haeufig gebrauchte Definitionen
+main.c          -  das Hauptprogramm des entstehenden Compilers
+preliminary.h   -  die vorlaeufige Definition der Tokens und ihrer Werte
+scanner.h       -  Interface zum Scanner
+scanner.l       -  die Scanner-Spezifikation: das ist Ihre Aufgabe
+utils.c         -  haeufig gebrauchte Hilfsfunktionen
+utils.h         -  Interface zu utils.c
+
+
+Aufgaben
+--------
+
+1. Studieren Sie die SPL-Sprachdefinition.
+   Machen Sie sich mit unserer Sprache vertraut, indem Sie mindestens
+   5 kleine SPL-Programme schreiben. Versuchen Sie, moeglichst viele
+   Features der Sprache zu benutzen. Hier ein Vorschlag (es wird
+   nachdruecklich empfohlen, diesen Vorschlag aufzugreifen, da die
+   verschiedenen Teilaufgaben jeweils andere Spracheigenschaften
+   nutzen, so dass Sie die entstehenden Programme spaeter auch als
+   Testprogramme fuer Ihren Compiler einsetzen koennen):
+   a) Im Hauptprogramm: Eingabe von zwei Zahlen, Ausgabe der Summe.
+   b) Dasselbe, aber mit Berechnung der Summe in einer Prozedur.
+   c) Einlesen eines Arrays von Zahlen im Hauptprogramm, Sortieren
+      des Arrays in einer Prozedur, Ausgabe des sortierten Arrays
+      im Hauptprogramm.
+   d) Berechnung von n! in einer Prozedur, sowohl iterativ als auch
+      rekursiv.
+   e) Zeichnen einer kleinen Figur auf dem Grafikbildschirm.
+   Hinweis: Um Ihre Programme auf syntaktische Richtigkeit testen zu
+   koennen, stehen Ihnen auf dem Sun-Rechner 'saturn' unter dem Pfad
+   /home/hg53/spl Referenzimplementierungen fuer Linux und SunOS zur
+   Verfuegung.
+
+2. Schreiben Sie die Spezifikation eines Scanners fuer SPL.
+   Ergaenzen Sie dazu die Datei 'scanner.l' und fuegen Sie eine
+   Moeglichkeit zur textuellen Ausgabe von Tokens (ggf. mit Wert)
+   hinzu.
+
+3. Lassen Sie Ihren Scanner die 5 Testprogramme aus dem ersten
+   Aufgabenteil analysieren. Beobachten Sie den Tokenstrom und
+   korrigieren Sie ggf. Ihre Scanner-Spezifikation.
+
+4. Schreiben Sie eine Eingabedatei zum systematischen Test ihres
+   Scanners, vor allem in Hinblick auf die verschiedenen Formen
+   von Ganzzahl-Literalen.
