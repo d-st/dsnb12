@@ -85,7 +85,7 @@ Absyn *progTree;
 
 %%
 
-parameter		: IDENT COLON type_t
+parameter	: IDENT COLON type_t
 			{ $$ = newParDec($1.line, newSym($1.val), $3, FALSE); }
 			| REF IDENT COLON type_t
 			{ $$ = newParDec($2.line, newSym($2.val), $4, TRUE); }
@@ -97,7 +97,7 @@ parameters_list	: parameter COMMA parameters_list
 			{ $$ = newDecList($1, emptyDecList()); }
 			;
 
-parameters		: // nichts
+parameters	: // nichts
 			{ $$ = emptyDecList(); }
 			| parameters_list
 			{ $$ = $1; }
@@ -115,7 +115,7 @@ lhs			: IDENT
 			{ $$ = $1; }
 			;
 
-expr_inner		: LPAREN expr RPAREN
+expr_inner	: LPAREN expr RPAREN
 			{ $$ = $2; }
 			| INTLIT
 			{ $$ = newIntExp($1.line, $1.val); }
@@ -179,6 +179,8 @@ statement		: SEMIC
 			{ $$ = newWhileStm($1.line, $3, $5); }
 			| IDENT LPAREN arglist RPAREN SEMIC
 			{ $$ = newCallStm($1.line, newSym($1.val), $3); }
+			| IDENT LPAREN RPAREN SEMIC
+			{ $$ = newCallStm($1.line, newSym($1.val), emptyExpList()); }
 			;
 
 statements		: statement statements
