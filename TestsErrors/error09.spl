@@ -1,0 +1,6 @@
+proc main() {
+  var a: int;
+  
+  a := 1<2; // Error: assignment has different types in line 4
+}
+

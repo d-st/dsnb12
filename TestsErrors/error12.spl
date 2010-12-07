@@ -1,0 +1,4 @@
+proc main() {
+  f_call(); // Error: undefined procedure 'f_call' in line 2
+}
+

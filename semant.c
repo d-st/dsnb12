@@ -46,22 +46,60 @@ Type *checkCompStm(Absyn *node, Table *symtab) {
 }
 
 Type *checkAssignStm(Absyn *node, Table *symtab) {
+  Type *lhs, *rhs;
 
+  lhs = checkNode(node->u.assignStm.var, symtab);
+  rhs = checkNode(node->u.assignStm.exp, symtab);
+
+  if(lhs != rhs)
+    error("assignment has different types in line %d", node->line);
   return NULL;
 }
 
 Type *checkIfStm(Absyn *node, Table *symtab) {
-
+  if(checkNode(node->u.ifStm.test, symtab) != builtinType_bool)
+    error("'if' test expression must be of type boolean in line %d", node->line);
+  checkNode(node->u.ifStm.thenPart, symtab);
+  checkNode(node->u.ifStm.elsePart, symtab);
   return NULL;
 }
 
 Type *checkWhileStm(Absyn *node, Table *symtab) {
-
+  if(checkNode(node->u.whileStm.test, symtab) != builtinType_bool)
+    error("Error: 'while' test expression must be of type boolean in line %d", node->line);
+  checkNode(node->u.whileStm.body, symtab);
   return NULL;
 }
 
 Type *checkCallStm(Absyn *node, Table *symtab) {
-
+  Entry *entry;
+  ParamTypes *p;
+  Absyn *arg;
+  int n = 0;
+  
+  entry = lookup(symtab, node->u.callStm.name);
+  if(entry == NULL)
+    error("undefined procedure '%s' in line %d", node->u.callStm.name, node->line); // TODO node->u.callStm.name is Sym* not char*
+ if(entry->kind != ENTRY_KIND_PROC) 
+    error("call of non-procedure '%s' in line %d", node->u.callStm.name, node->line);
+	
+  // TODO: check parameter types. 
+  p = entry->u.procEntry.paramTypes;
+  arg = node->u.callStm.args;
+  
+  while(!p->isEmpty) {
+    n++;
+	if(p->type != checkNode(soll, symtab))
+	  error("procedure '%s' argument %d type mismatch in line %d", node->u.callStm.name, n, node->line);
+	p = p->next;
+  }
+  if(n < soll_n)
+    error("procedure '%s' called with too few arguments in line %d", node->u.callStm.name, node->line);
+  if(n > soll_n)
+    error("procedure '%s' called with too many arguments in line %d", node->u.callStm.name, node->line);
+  
+  // TODO: check ref params for being a variable explicitly.
+	
   return NULL;
 }
 
@@ -87,11 +125,10 @@ Type *checkExpList(Absyn *node, Table *symtab) {
 
 
 Type *checkOpExp(Absyn *node, Table *symtab) {
-  Type *leftType, *rightType, *type;
+  Type *leftType, *rightType;
 
   leftType  = checkNode(node->u.opExp.left,  symtab);
   rightType = checkNode(node->u.opExp.right, symtab);
-  type = NULL;
 
   if(leftType != rightType) 
     error("expression combines different types in line %d", node->line);
@@ -104,7 +141,7 @@ Type *checkOpExp(Absyn *node, Table *symtab) {
     case ABSYN_OP_GRE:
       if(leftType != builtinType_int) 
         error("comparison requires integer operands in line %d", node->line);
-      type = builtinType_bool;
+      node->type_t = builtinType_bool;
       break;
     case ABSYN_OP_ADD: // case fall-through, following cases same type
     case ABSYN_OP_SUB:
@@ -112,12 +149,12 @@ Type *checkOpExp(Absyn *node, Table *symtab) {
     case ABSYN_OP_DIV:
       if(leftType != builtinType_int) 
         error("comparison requires integer operands in line %d", node->line);
-      type = builtinType_int;
+      node->type_t = builtinType_int;
       break;
     default:
       error("unknown node type %d in checkNode", node->type);
   }
-  return type;
+  return node->type_t;
 }
 
 Type *checkSimpleVar(Absyn *node, Table *symtab) {
@@ -127,13 +164,15 @@ Type *checkSimpleVar(Absyn *node, Table *symtab) {
     error("undefined variable '%s' in line %d", node->u.simpleVar.name, node->line);
   if(entry->kind != ENTRY_KIND_VAR) 
     error("'%s' is not a variable in line %d", node->u.simpleVar.name, node->line);
-  return entry->u.varEntry.type;
+  node->type_t = entry->u.varEntry.type;
+  return node->type_t;
 }
 
 Type *checkArrayVar(Absyn *node, Table *symtab) {
-  if(checkNode(node->arrayVar.index) != builtinType_int)
+  if(checkNode(node->u.arrayVar.index, symtab) != builtinType_int)
     error("illegal indexing with a non-integer in line %d", node->line);
-  return checkNode(node->arrayVar.var);
+  node->type_t = checkNode(node->u.arrayVar.var, symtab);
+  return node->type_t;
 }
 
 Type *checkTypeDec(Absyn *node, Table *symtab) {
@@ -148,9 +187,10 @@ Type *checkTypeDec(Absyn *node, Table *symtab) {
 }
 
 Type *checkParDec(Absyn *node, Table *symtab) {
+/*
   ParamTypes *paramTypes, *next;
   Type *type;
-/*
+
   return emptyParamTypes();
   type = checkNode(node->u.parDec.ty, symtab);
   next = NULL; // TODO
@@ -164,6 +204,7 @@ Type *checkParDec(Absyn *node, Table *symtab) {
 }
 
 Type *checkProcDec(Absyn *node, Table *symtab) {
+/*
   ParamTypes *paramTypes;
   Table *localSymtab;
   Entry *entry;
@@ -176,7 +217,15 @@ Type *checkProcDec(Absyn *node, Table *symtab) {
   }
   // TODO: eval node->u.procDec.decls
   // TODO: eval node->u.procDec.body
+*/
+  return NULL;
+}
 
+Type *checkDecList(Absyn *node, Table *symtab) {
+  if(node->u.decList.isEmpty)
+    return NULL;
+  checkNode(node->u.decList.head, symtab);
+  checkNode(node->u.decList.tail, symtab);
   return NULL;
 }
 
@@ -234,9 +283,7 @@ Type *checkNode(Absyn *node, Table *symtab) {
       checkArrayVar(node, symtab);
       break;
     case ABSYN_DECLIST:
-      if(node->u.decList.isEmpty) break;
-      checkNode(node->u.decList.head, symtab);
-      checkNode(node->u.decList.tail, symtab);
+	  checkDecList(node, symtab);
       break;
     case ABSYN_STMLIST:
       checkStmList(node, symtab);

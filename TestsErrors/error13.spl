@@ -1,0 +1,6 @@
+proc main() {
+  var f_call: int;
+  
+  f_call(); // Error: call of non-procedure 'f_call' in line 4
+}
+

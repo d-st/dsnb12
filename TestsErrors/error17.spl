@@ -1,0 +1,6 @@
+proc f_call(ref x: int) {}
+
+proc main() {
+  f_call(1); // Error: procedure 'f_call' argument 1 must be a variable in line 4
+}
+

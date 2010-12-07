@@ -1,0 +1,6 @@
+proc f_call(x: int) {}
+
+proc main() {
+  f_call(1, 2); // Error: procedure 'f_call' called with too many arguments in line 4
+}
+
