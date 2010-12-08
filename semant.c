@@ -21,28 +21,26 @@ Type *builtinType_int,
      *builtinType_bool;
 
 Type *checkNameTy(Absyn *node, Table *symtab) {
-  
-  return NULL;
+  Entry *entry;
+  entry = lookup(symtab, node->u.nameTy.name);
+  if(entry == NULL)
+    error("undefined type '%s' in line %d", symToString(node->u.nameTy.name), node->line);
+  return entry->u.typeEntry.type;
 }
 
 Type *checkArrayTy(Absyn *node, Table *symtab) {
-
-  return NULL;
-}
-
-Type *checkVarDec(Absyn *node, Table *symtab) {
-
-  return NULL;
+  Type *baseType;
+  baseType = checkNode(node->u.arrayTy.ty, symtab);
+  return newArrayType(node->u.arrayTy.size, baseType);
 }
 
 Type *checkEmptyStm(Absyn *node, Table *symtab) {
-
+  // nothing to do: empty statement
   return NULL;
 }
 
 Type *checkCompStm(Absyn *node, Table *symtab) {
-
-  return NULL;
+  return checkNode(node->u.compStm.stms, symtab);
 }
 
 Type *checkAssignStm(Absyn *node, Table *symtab) {
@@ -74,55 +72,64 @@ Type *checkWhileStm(Absyn *node, Table *symtab) {
 Type *checkCallStm(Absyn *node, Table *symtab) {
   Entry *entry;
   ParamTypes *p;
-  Absyn *arg;
+  Absyn *args, *arg;
   int n = 0;
   
   entry = lookup(symtab, node->u.callStm.name);
   if(entry == NULL)
-    error("undefined procedure '%s' in line %d", node->u.callStm.name, node->line); // TODO node->u.callStm.name is Sym* not char*
- if(entry->kind != ENTRY_KIND_PROC) 
-    error("call of non-procedure '%s' in line %d", node->u.callStm.name, node->line);
-	
-  // TODO: check parameter types. 
+    error("undefined procedure '%s' in line %d", symToString(node->u.callStm.name), node->line);
+  if(entry->kind != ENTRY_KIND_PROC) 
+    error("call of non-procedure '%s' in line %d", symToString(node->u.callStm.name), node->line);
+
   p = entry->u.procEntry.paramTypes;
-  arg = node->u.callStm.args;
+  args = node->u.callStm.args;
+  if(args->type != ABSYN_EXPLIST)
+    error("error in abstract syntax. should not happen; internal compiler error.");
+  arg = args;
   
-  while(!p->isEmpty) {
+  while(p && !p->isEmpty) {
     n++;
-	if(p->type != checkNode(soll, symtab))
-	  error("procedure '%s' argument %d type mismatch in line %d", node->u.callStm.name, n, node->line);
+	if(arg->u.expList.isEmpty) // (n < soll_n)
+      error("procedure '%s' called with too few arguments in line %d", 
+	        symToString(node->u.callStm.name), node->line);
+	if(p->type != checkNode(arg->u.expList.head, symtab))
+	  error("procedure '%s' argument %d type mismatch in line %d", 
+	        symToString(node->u.callStm.name), n, node->line);
+	arg = arg->u.expList.tail;
 	p = p->next;
   }
-  if(n < soll_n)
-    error("procedure '%s' called with too few arguments in line %d", node->u.callStm.name, node->line);
-  if(n > soll_n)
-    error("procedure '%s' called with too many arguments in line %d", node->u.callStm.name, node->line);
+  if(!(arg->u.expList.isEmpty)) // (n > soll_n)
+    error("procedure '%s' called with too many arguments in line %d", 
+	      symToString(node->u.callStm.name), node->line);
   
   // TODO: check ref params for being a variable explicitly.
-	
+
   return NULL;
 }
 
 Type *checkVarExp(Absyn *node, Table *symtab) {
-
-  return NULL;
+  return checkNode(node->u.varExp.var, symtab);
 }
 
 Type *checkIntExp(Absyn *node, Table *symtab) {
-
-  return NULL;
+  return builtinType_int;
 }
 
 Type *checkStmList(Absyn *node, Table *symtab) {
-
+  if(node->u.stmList.isEmpty)
+    return NULL;
+  checkNode(node->u.stmList.head, symtab);
+  checkNode(node->u.stmList.tail, symtab);
   return NULL;
 }
 
 Type *checkExpList(Absyn *node, Table *symtab) {
-
+  if(node->u.expList.isEmpty)
+    return NULL;
+  checkNode(node->u.expList.head, symtab);
+  checkNode(node->u.expList.tail, symtab);
   return NULL;
 }
-
 
 Type *checkOpExp(Absyn *node, Table *symtab) {
   Type *leftType, *rightType;
@@ -161,9 +168,9 @@ Type *checkSimpleVar(Absyn *node, Table *symtab) {
   Entry *entry;
   entry = lookup(symtab, node->u.simpleVar.name);
   if(entry == NULL) 
-    error("undefined variable '%s' in line %d", node->u.simpleVar.name, node->line);
+    error("undefined variable '%s' in line %d", symToString(node->u.simpleVar.name), node->line);
   if(entry->kind != ENTRY_KIND_VAR) 
-    error("'%s' is not a variable in line %d", node->u.simpleVar.name, node->line);
+    error("'%s' is not a variable in line %d", symToString(node->u.simpleVar.name), node->line);
   node->type_t = entry->u.varEntry.type;
   return node->type_t;
 }
@@ -181,43 +188,70 @@ Type *checkTypeDec(Absyn *node, Table *symtab) {
   type = checkNode(node->u.typeDec.ty, symtab);
   entry = newTypeEntry(type);
   if(enter(symtab, node->u.typeDec.name, entry) == NULL) {
-    error("redeclaration of '%s' in line %d", node->u.typeDec.name, node->line);
+    error("redeclaration of '%s' in line %d", symToString(node->u.typeDec.name), node->line);
+  }
+  return NULL;
+}
+
+Type *checkVarDec(Absyn *node, Table *symtab) {
+  Type *type;
+  Entry *entry;
+  type = checkNode(node->u.typeDec.ty, symtab);
+  entry = newVarEntry(type, FALSE); // FALSE: normal variables are not by ref
+  if(enter(symtab, node->u.typeDec.name, entry) == NULL) {
+    error("redeclaration of '%s' in line %d", symToString(node->u.typeDec.name), node->line);
   }
   return NULL;
 }
 
 Type *checkParDec(Absyn *node, Table *symtab) {
-/*
-  ParamTypes *paramTypes, *next;
-  Type *type;
-
-  return emptyParamTypes();
-  type = checkNode(node->u.parDec.ty, symtab);
-  next = NULL; // TODO
-  paramTypes = newParamTypes(type, node->u.parDec.isRef, next);
-  
-  return paramTypes;
-  
-  error("should never reach this");
-*/
-  return NULL;
+  return checkNode(node->u.parDec.ty, symtab);
 }
 
 Type *checkProcDec(Absyn *node, Table *symtab) {
-/*
-  ParamTypes *paramTypes;
+  ParamTypes *paramTypes, *p_last, *p_new;
   Table *localSymtab;
   Entry *entry;
+  Absyn *tmp;
 
-  localSymtab = newTable(symtab);
-  paramTypes = checkNode(node->u.procDec.params, localSymtab); // TODO: ParamTypes* = Type*
-  entry = newProcEntry(paramTypes, localSymtab);
-  if(enter(symtab, node->u.procDec.name, entry) == NULL) {
-    error("redeclaration of '%s' in line %d", node->u.procDec.name, node->line);
+  // 1. determine parameter types
+  paramTypes = NULL;
+  tmp = node->u.procDec.params;
+  if(tmp->type != ABSYN_DECLIST)
+    error("error in abstract syntax. should not happen; internal compiler error.");
+  if(tmp->u.decList.isEmpty)
+    paramTypes = emptyParamTypes();
+  while(!(tmp->u.decList.isEmpty)) {
+    p_new = newParamTypes(checkNode(tmp->u.decList.head, symtab), // type
+	                      tmp->u.decList.head->u.parDec.isRef,    // isRef(bool)
+						  NULL);                                  // next*
+	if(paramTypes == NULL) 
+	  paramTypes = p_new;
+	else
+	  p_last->next = p_new;
+	p_last = p_new;
+	tmp = tmp->u.decList.tail;
   }
-  // TODO: eval node->u.procDec.decls
-  // TODO: eval node->u.procDec.body
-*/
+  p_last->next = emptyParamTypes();
+  
+  // 2. enter proc into global symbol table
+  localSymtab = newTable(symtab);
+  entry = newProcEntry(paramTypes, localSymtab);
+  if(enter(symtab, node->u.procDec.name, entry) == NULL) { // TODO: crashes with error0[56].spl
+    error("redeclaration of '%s' in line %d", symToString(node->u.procDec.name), node->line);
+  }
+
+  // 3. enter parameters into local symbol table
+  // TODO
+  
+  // 4. compute local declarations
+  checkNode(node->u.procDec.decls, localSymtab);
+  
+  // 5. compute procedure body
+  checkNode(node->u.procDec.body, localSymtab);
+  
+  // optional debug output
+
   return NULL;
 }
 
@@ -292,7 +326,7 @@ Type *checkNode(Absyn *node, Table *symtab) {
       checkExpList(node, symtab);
       break;
     default:
-      error("unknown node type %d in checkNode", node->type);
+      error("unknown node type %d in checkNode, line %d", node->type, node->line);
   }
 
   return NULL;
@@ -300,41 +334,46 @@ Type *checkNode(Absyn *node, Table *symtab) {
 
 Table *check(Absyn *program, boolean showSymbolTables) {
   Table *globalTable;
+  Entry *e;
   globalTable = newTable(NULL);
 
   /* generate built-in types */
   builtinType_int  = newPrimitiveType("int");
   builtinType_bool = newPrimitiveType("bool");
 
-  Entry *exit_builtin = newProcEntry(emptyParamTypes(), newTable(globalTable));
-  Entry *time_builtin = newProcEntry(newParamTypes(builtinType_int, TRUE, emptyParamTypes()), newTable(globalTable));
-  Entry *readi_builtin = newProcEntry(newParamTypes(builtinType_int, TRUE, emptyParamTypes()), newTable(globalTable));
-  Entry *readc_builtin = newProcEntry(newParamTypes(builtinType_int, TRUE, emptyParamTypes()), newTable(globalTable));
-  Entry *printi_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
-  Entry *printc_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
-  Entry *clearAll_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
-  Entry *setPixel_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes()))), newTable(globalTable));
-  Entry *drawCircle_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes())))), newTable(globalTable));
-  Entry *drawLine_builtin = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes()))))), newTable(globalTable));
+  Entry *builtinProc_exit       = newProcEntry(emptyParamTypes(), newTable(globalTable));
+  Entry *builtinProc_time       = newProcEntry(newParamTypes(builtinType_int, TRUE,  emptyParamTypes()), newTable(globalTable));
+  Entry *builtinProc_readi      = newProcEntry(newParamTypes(builtinType_int, TRUE,  emptyParamTypes()), newTable(globalTable));
+  Entry *builtinProc_readc      = newProcEntry(newParamTypes(builtinType_int, TRUE,  emptyParamTypes()), newTable(globalTable));
+  Entry *builtinProc_printi     = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
+  Entry *builtinProc_printc     = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
+  Entry *builtinProc_clearAll   = newProcEntry(newParamTypes(builtinType_int, FALSE, emptyParamTypes()), newTable(globalTable));
+  Entry *builtinProc_setPixel   = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes()))), newTable(globalTable));
+  Entry *builtinProc_drawCircle = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes())))), newTable(globalTable));
+  Entry *builtinProc_drawLine   = newProcEntry(newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, newParamTypes(builtinType_int, FALSE, emptyParamTypes()))))), newTable(globalTable));
 
   /* setup global symbol table */
-  enter(globalTable, newSym("int"), newTypeEntry(builtinType_int));
-  enter(globalTable, newSym("exit"), exit_builtin);
-  enter(globalTable, newSym("time"), time_builtin);
-  enter(globalTable, newSym("readi"), readi_builtin);
-  enter(globalTable, newSym("readc"), readc_builtin);
-  enter(globalTable, newSym("printi"), printi_builtin);
-  enter(globalTable, newSym("printc"), printc_builtin);
-  enter(globalTable, newSym("clearAll"), clearAll_builtin);
-  enter(globalTable, newSym("setPixel"), setPixel_builtin);
-  enter(globalTable, newSym("drawCircle"), drawCircle_builtin);
-  enter(globalTable, newSym("drawLine"), drawLine_builtin);
+  enter(globalTable, newSym("int"),        newTypeEntry(builtinType_int));
+  enter(globalTable, newSym("exit"),       builtinProc_exit);
+  enter(globalTable, newSym("time"),       builtinProc_time);
+  enter(globalTable, newSym("readi"),      builtinProc_readi);
+  enter(globalTable, newSym("readc"),      builtinProc_readc);
+  enter(globalTable, newSym("printi"),     builtinProc_printi);
+  enter(globalTable, newSym("printc"),     builtinProc_printc);
+  enter(globalTable, newSym("clearAll"),   builtinProc_clearAll);
+  enter(globalTable, newSym("setPixel"),   builtinProc_setPixel);
+  enter(globalTable, newSym("drawCircle"), builtinProc_drawCircle);
+  enter(globalTable, newSym("drawLine"),   builtinProc_drawLine);
 
   /* do semantic checks */
   checkNode(program, globalTable);
 
   /* check if "main()" is present */
-
+  e = lookup(globalTable, newSym("main"));
+  if(e == NULL)
+    error("procedure 'main' is missing");
+  if(e->kind != ENTRY_KIND_PROC)
+    error("'main' is not a procedure");
 
   /* return global symbol table */
   if(showSymbolTables) {

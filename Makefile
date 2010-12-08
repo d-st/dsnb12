@@ -52,6 +52,18 @@ mytests:	all
 		done
 		@echo
 
+myerrortests:	all
+		@for i in TestsErrors/*.spl ; do \
+		  echo -n $$i:; \
+		  ./$(BIN) $$i > errors-my.txt ; \
+		  ./Tests/spl-reference $$i o > errors-ref.txt ; \
+		  diff -q errors-my.txt errors-ref.txt>/dev/null && echo " ok" || (echo " failed"; \
+		  ./$(BIN) $$i; \
+		  ./Tests/spl-reference $$i o); \
+		  rm errors-my.txt errors-ref.txt; \
+		done
+		@echo
+
 -include depend.mak
 
 depend:		parser.tab.c lex.yy.c
