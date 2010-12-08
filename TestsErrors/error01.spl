@@ -2,6 +2,6 @@ type t = array[2] of int;
 
 proc main() {
   var a: t;
-  if(1 = a); // error: expression combines different types
+  if(1 = a); // Error: expression combines different types
 }
 

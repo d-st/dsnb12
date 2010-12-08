@@ -1,0 +1,4 @@
+proc main() {
+  var x: A; // Error: undefined type 'A' in line 2
+}
+

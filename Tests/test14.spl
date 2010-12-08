@@ -1,0 +1,6 @@
+proc f_call(a: int, b: int, c: int, d: int, e: int, f: int) {}
+
+proc main() {
+  f_call(1,2,3,4,5,6);
+}
+

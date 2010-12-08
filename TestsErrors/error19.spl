@@ -1,0 +1,6 @@
+
+type main = int; // Error: 'main' is not a procedure
+
+proc m() {
+}
+

@@ -1,5 +1,5 @@
 type t = array[2] of int;
-type t = array[3] of int; // error: redeclaration of 't'
+type t = array[3] of int; // Error: redeclaration of 't'
 
 proc main() {
   var a: t;

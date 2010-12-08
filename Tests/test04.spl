@@ -2,4 +2,4 @@
 proc test(a:int,x:int) {
 }
 
-
+proc main(){}
