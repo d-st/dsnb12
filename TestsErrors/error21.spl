@@ -1,0 +1,3 @@
+proc main(x: int) { // Error: procedure 'main' must not have any parameters
+}
+

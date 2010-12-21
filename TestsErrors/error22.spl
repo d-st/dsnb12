@@ -1,0 +1,6 @@
+proc f_call(ref x: int) {}
+
+proc main() {
+  var x: f_call; // Error: 'f_call' is not a type in line 4
+}
+
