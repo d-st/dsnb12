@@ -34,7 +34,7 @@ tests:		all
 		done
 		@echo
 
-mytests:	all
+check:	all
 		@for i in Tests/*.spl ; do \
 		  echo $$i:; \
 		  echo -n " - testing clean parsing: "; \
@@ -53,11 +53,11 @@ mytests:	all
 		  ./$(BIN) --tables $$i | ./Tests/sort-table-output.pl > tables-my.txt ; \
 		  ./Tests/spl-reference --tables $$i o | ./Tests/sort-table-output.pl > tables-ref.txt ; \
 		  diff -q tables-my.txt tables-ref.txt>/dev/null && echo "ok" || echo "failed"; \
-		  rm tables-my.txt tables-ref.txt o; \
+		  rm -f tables-my.txt tables-ref.txt o; \
 		done
 		@echo
 
-myerrortests:	all
+check-errors:	all
 		@for i in TestsErrors/*.spl ; do \
 		  echo -n $$i:; \
 		  ./$(BIN) $$i > errors-my.txt ; \

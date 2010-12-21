@@ -1,8 +1,6 @@
-type t = array[2] of int;
-
 proc main() {
-  var a: t;
-  var b: t;
+  var a: int;
+  var b: int;
 
   a := b;
 }
