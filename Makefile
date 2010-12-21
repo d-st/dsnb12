@@ -49,6 +49,11 @@ mytests:	all
 		  ./Tests/spl-reference --absyn $$i o > absyn-ref.txt ; \
 		  diff -q absyn-my.txt absyn-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm absyn-my.txt absyn-ref.txt ; \
+		  echo -n " - reference testing symbol tables: "; \
+		  ./$(BIN) --tables $$i | ./Tests/sort-table-output.pl > tables-my.txt ; \
+		  ./Tests/spl-reference --tables $$i o | ./Tests/sort-table-output.pl > tables-ref.txt ; \
+		  diff -q tables-my.txt tables-ref.txt>/dev/null && echo "ok" || echo "failed"; \
+		  rm tables-my.txt tables-ref.txt ; \
 		done
 		@echo
 
