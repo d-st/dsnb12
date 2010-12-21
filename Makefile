@@ -53,7 +53,7 @@ mytests:	all
 		  ./$(BIN) --tables $$i | ./Tests/sort-table-output.pl > tables-my.txt ; \
 		  ./Tests/spl-reference --tables $$i o | ./Tests/sort-table-output.pl > tables-ref.txt ; \
 		  diff -q tables-my.txt tables-ref.txt>/dev/null && echo "ok" || echo "failed"; \
-		  rm tables-my.txt tables-ref.txt ; \
+		  rm tables-my.txt tables-ref.txt o; \
 		done
 		@echo
 
@@ -75,8 +75,8 @@ depend:		parser.tab.c lex.yy.c
 		$(CC) $(CFLAGS) -MM $(SRCS) > depend.mak
 
 clean:
-		rm -f *~ *.o
-		rm -f Tests/*~
+		rm -f *~ *.o o
+		rm -f Tests/*~ Tests/o
 
 dist-clean:	clean
 		rm -f $(BIN) parser.tab.c parser.tab.h lex.yy.c depend.mak
