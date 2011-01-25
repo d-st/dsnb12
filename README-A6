@@ -1,0 +1,114 @@
+Uebungen
+========
+
+1. Geben Sie fuer jeden Knotentyp der Abstrakten Syntax von SPL
+   seine Bedeutung anhand eines Beispiels auf folgende Weise an:
+   - Schreiben sie ein moeglichst kleines, aber vollstaendiges
+     SPL-Programm, so dass die Abstrakte Syntax den gewuenschten
+     Knotentyp enthaelt.
+   - Zeichnen Sie den zum Programm gehoerigen Baum der Abstrakten
+     Syntax.
+   - Beschreiben Sie zuletzt moeglichst kurz und buendig, was der
+     Knotentyp also repraesentiert.
+
+2. Beschreiben Sie, wie die Semantik-Pruefung bei einem Typ
+   "Zeiger auf T" ablaufen muesste:
+   - bei der Konstruktion eines solchen Typs
+   - bei der Verwendung eines solchen Typs
+
+3. Welche Informationen muesste ein Typ "Funktion" speichern?
+
+4. Welche Ergaenzungen bzw. Aenderungen in den Semantik-Pruefungen
+   wuerde die Hinzunahme eines weiteren primitiven Typs (z.B. "char")
+   zu SPL erfordern? Welche Fragen muesste dann die Sprachdefinition
+   zusaetzlich beantworten?
+
+5. Zeichnen Sie die Stack-Frames aller Prozeduren der 5 Testprogramme
+   aus dem Aufgabenblatt 2.
+
+6. Zeichnen Sie die Stack-Frames aller Prozeduren des SPL-Programms,
+   das das 8-Damen-Problem loest.
+
+
+Programmieraufgabe
+==================
+
+Problemstellung
+---------------
+
+Berechnung der Offsets aller Argumente, Parameter und Variablen, sowie
+Bestimmung der Groesse der benoetigten Stack-Bereiche fuer eingehende
+Argumente, lokale Variable und ausgehende Argumente.
+
+
+Vorgegebene Dateien
+-------------------
+
+README          -  die Beschreibung, die Sie gerade lesen
+main.c          -  das Hauptprogramm des entstehenden Compilers
+varalloc.h      -  Interface zur Variablen-Allokation
+varalloc.c      -  die Variablen-Allokation: das ist Ihre Aufgabe
+
+
+Aufgaben
+--------
+
+1. Speichern Sie in jedem Typ seine Groesse (d.h. die Anzahl Bytes,
+   die ein Objekt dieses Typs im Speicher belegen wird).
+   Vorschlag: Erweitern Sie die Struktur "Type" um eine Komponente.
+   Geben Sie beim Aufruf von "newPrimitiveType" die Groesse des Typs
+   mit. Berechnen Sie die Groesse fuer Arrays bei der Typkonstruktion.
+   Hinweis: Auf ECO32 belegt ein Integer 4 Bytes und eine Adresse
+   (wichtig fuer Referenz-Parameter) ebenfalls 4 Bytes. Ein boole'scher
+   Wert kann ebenfalls mit 4 Bytes angenommen werden (obwohl man ihn
+   niemals speichern muss - ist klar, warum?). Da man solche Konstanten
+   ungern tief im Code versteckt, stehen sie unter den Namen
+       INT_BYTE_SIZE
+       BOOL_BYTE_SIZE
+       REF_BYTE_SIZE
+   als Konstante in "varalloc.h" zur Verfuegung.
+
+2. Sehen Sie eine Speichermoeglichkeit fuer Offsets bei Argumenten,
+   Parametern und lokalen Variablen vor.
+   Vorschlag: Erweitern Sie die Strukturen "ParamTypes" und "varEntry"
+   um jeweils eine Komponente.
+
+3. Programmieren Sie einen Durchgang durch die Prozedurdeklarationen,
+   um die Offsets einzutragen.
+
+4. Sehen Sie Speicherplaetze vor fuer die Groessen der drei Bereiche
+   - eingehende Argumente
+   - lokale Variable
+   - ausgehende Argumente.
+   Vorschlag: Erweitern der Struktur "procEntry" um drei Komponenten.
+
+5. Ergaenzen Sie das Programm aus 3. um das Eintragen der ersten
+   beiden Bereichsgroessen (eingehende Argumente, lokale Variable).
+
+6. Programmieren Sie einen zweiten Durchlauf durch die Prozedur-
+   deklarationen, um auch die dritte Bereichsgroesse (ausgehende
+   Argumente) zu ermitteln.
+   Erinnerung: Diese berechnet sich als das Maximum ueber die
+   Groessen der Bereiche eingehender Argumente aller aus der
+   betrachteten Prozedur heraus AUFGERUFENEN Prozeduren.
+   Hinweis: Sehen Sie dabei auch irgendeine Moeglichkeit vor,
+   zu vermerken, ob die gerade betrachtete Prozedur ueberhaupt
+   eine weitere aufruft; das wird spaeter bei der Codeerzeugung
+   ebenfalls gebraucht.
+
+7. Vergessen Sie nicht, auch die Bibliotheksprozedur-Eintraege
+   zu behandeln, jedenfalls soweit es die Offsets der Argumente
+   und die Groesse des Bereichs der eingehenden Argumente betrifft.
+   Sie brauchen sich NICHT um die Offsets der lokalen Variablen
+   bzw. ausgehenden Argumente und deren Bereichsgroessen zu kuemmern,
+   denn Sie machen KEIN Layout der Stack-Frames fuer die Prozeduren
+   aus der Bibliothek (das hat der Konstrukteur der Bibliothek fuer
+   Sie erledigt). Sinn dieser Aktion ist es,
+   - zu wissen, wieviel Platz man fuer Argumente von Aufrufen der
+     Bibliotheksfunktionen braucht
+   - Offsets zum Speichern der Argumente zu haben.
+
+8. Wie immer empfiehlt es sich, Testausgaben einschalten zu koennen.
+   Dazu steht in der Funktion "varalloc" der Wahrheitswert "showVarAlloc"
+   zur Verfuegung, der genau dann den Wert TRUE hat, wenn der Benutzer
+   des Compilers das Kommandozeilenargument "--vars" angegeben hat.
