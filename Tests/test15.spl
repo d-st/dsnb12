@@ -1,0 +1,9 @@
+
+proc test(a:int,x:int) {
+}
+
+proc main() {
+  var a: int;
+  test(a, 42);
+}
+
