@@ -1,0 +1,96 @@
+Uebungen
+========
+
+1. Betrachten Sie die Grammatik
+   S -> (L)|a
+   L -> L,S|S
+   a) Was sind die Terminale, Nichtterminale und das Startsymbol?
+   b) Finden Sie Parsebaeume fuer die folgenden Saetze:
+      (a,a)
+      (a,(a,a))
+      (a,((a,a),(a,a)))
+   c) Kostruieren Sie eine Linksableitung fuer jeden Satz aus b).
+   d) Kostruieren Sie eine Rechtsableitung fuer jeden Satz aus b).
+   e) Welche Sprache generiert diese Grammatik?
+
+2. Betrachten Sie die Grammatik
+   S -> aSbS|bSaS|<epsilon>
+   a) Zeigen Sie durch Konstruktion zweier verschiedener
+      Linksableitungen fuer den Satz abab, dass die Grammatik
+      mehrdeutig ist.
+   b) Zeigen Sie durch Konstruktion zweier verschiedener
+      Rechtsableitungen fuer den Satz abab, dass die Grammatik
+      mehrdeutig ist.
+   c) Konstruieren Sie die entsprechenden Parsebaeume fuer die
+      Ableitungen aus a) und b).
+
+3. Uebersetzen Sie den folgenden regulaeren Ausdruck in eine
+   kontextfreie Grammatik:
+   ((xy*x)|(yx*y))?
+
+4. Diese und die folgende Aufgabe beschaeftigt sich noch einmal mit
+   den SLPL-Programmen aus der ersten Uebung.
+   a) Schreiben Sie eine (moeglicherweise mehrdeutige) Grammatik zur
+      Beschreibung von SLPL-Programmen. Gehen Sie genau nach dem im
+      Aufgabentext angegebenen Aufbau der Sprache vor.
+   b) Machen Sie die Grammatik eindeutig. Beruecksichtigen Sie
+      die ueblichen Regeln zum Vorrang und zur Assoziativitaet.
+
+5. a) Wandeln Sie die Grammatik aus 4b) in eine LL(1)-Grammatik um.
+   b) Geben Sie das Geruest fuer einen Top-Down-Parser nach dem
+      Prinzip "rekursiver Abstieg" an!
+   c) Wir hatten in der ersten Uebung das zu interpretierende Programm
+      in Form eines Baumes vorgegeben. Wie ist der Top-Down-Parser zu
+      ergaenzen, um beim Parsen einen solchen Programmbaum als Abbild
+      des gelesenen Quelltextes zu erzeugen?
+
+
+Programmieraufgabe
+==================
+
+Problemstellung
+---------------
+
+Konstruktion des Parsers fuer den SPL-Compiler.
+
+
+Vorgegebene Dateien
+-------------------
+
+README          -  die Beschreibung, die Sie gerade lesen
+Makefile        -  ein Makefile zur automatischen Uebersetzung
+main.c          -  das Hauptprogramm des entstehenden Compilers
+parser.h        -  Interface zum Parser
+parser.y        -  die Parser-Spezifikation: das ist Ihre Aufgabe
+
+
+Aufgaben
+--------
+
+1. Nehmen Sie folgende Aenderungen an Ihrem SPL-Scanner vor:
+   a) Loeschen Sie die Datei 'preliminary.h'; die darin stehende
+      Information wird nun vom Parsergenerator erzeugt und in die
+      Datei 'parser.tab.h' geschrieben.
+   b) Dementsprechend ersetzen Sie in 'scanner.l' die Zeile
+        #include "preliminary.h"
+      durch die Zeile
+        #include "parser.tab.h"
+   c) Loeschen Sie in 'scanner.l' die Definition der Variablen
+      'yylval'; auch diese wird vom Parsergenerator definiert.
+
+2. Schreiben Sie die Spezifikation eines Parsers fuer SPL.
+   Ergaenzen Sie dazu die Datei 'parser.y'. Eliminieren Sie
+   ALLE reduce/reduce-Konflikte, falls Sie welche bekommen.
+   Es darf maximal EIN shift/reduce-Konflikt uebrig bleiben.
+   Welcher? Wie wird der aufgeloest? Warum ist das richtig?
+
+3. Testen Sie Ihren Parser sowohl mit den im vorigen Aufgabenblatt
+   geschriebenen 5 Testprogrammen als auch mit einer Reihe von ganz
+   kleinen Tests, die jeweils einen bestimmten Aspekt der Grammatik
+   testen, den aber moeglichst vollstaendig. Fuehren Sie diesen
+   Schritt mit der gebotenen Sorgfalt aus; die Akzeptanztests zur
+   Benotung Ihrer Hausuebung gehen genauso vor!
+
+4. Machen Sie sich damit vertraut, wie man die Testausgabe des von
+   'bison' erzeugten Parsers aktiviert. Verfolgen Sie an den Tests,
+   wie die syntaktische Analyse vonstatten geht!

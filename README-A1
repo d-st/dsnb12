@@ -1,0 +1,152 @@
+
+Programmieraufgabe
+==================
+
+Problemstellung
+---------------
+
+Diese Aufgabe dient zur Einfuehrung in
+  - die Baumdarstellung von Programmen
+  - die rekursive Bearbeitung solcher Baeume
+  - den Aufbau von Symboltabellen (Abbildung Name --> Attribute)
+und behandelt die Implementierung eines Interpreters fuer die Sprache SLPL.
+
+Die Mini-Programmiersprache SLPL ("Straight-Line Programming Language")
+kennt Anweisungen und Ausdruecke. Jede Anweisung bewirkt eine
+Zustandsaenderung; jeder Ausdruck repraesentiert einen Wert.
+Ein korrektes SLPL-Programm besteht aus genau einer Anweisung.
+
+Im Folgenden steht "ausdruck" fuer einen Ausdruck und "anweisung" fuer
+eine Anweisung sowie "Zahl" fuer eine ganze Zahl und "Name" fuer einen
+beliebigen Namen.
+
+Die Sprache ist folgendermassen aufgebaut:
+
+1. anweisung   -->   anweisung ; anweisung    ("Folge")
+2. anweisung   -->   Name := ausdruck         ("Zuweisung")
+3. anweisung   -->   Zeige(ausdruck)          ("Ausgabe")
+4. ausdruck    -->   Zahl                     ("Literal")
+5. ausdruck    -->   Name                     ("Variable")
+6. ausdruck    -->   ausdruck + ausdruck      ("Summe")
+7. ausdruck    -->   ausdruck - ausdruck      ("Differenz")
+8. ausdruck    -->   ausdruck * ausdruck      ("Produkt")
+9. ausdruck    -->   ausdruck / ausdruck      ("Quotient")
+
+Diese Kurzschreibweise bedeutet folgendes:
+
+1. Das Konstrukt "anweisung1 ; anweisung2" ist eine Anweisung.
+   Sie bewirkt zuerst die Ausfuehrung von "anweisung1", dann
+   die Ausfuehrung von "anweisung2".
+2. Das Konstrukt "Name := ausdruck" ist eine Anweisung.
+   Sie bewirkt die Berechnung des Wertes von "ausdruck" und
+   dann das Speichern dieses Wertes in der Variablen "Name".
+3. Das Konstrukt "Zeige(ausdruck)" ist eine Anweisung.
+   Sie bewirkt die Berechnung des Wertes von "ausdruck" und
+   dann die Ausgabe dieses Wertes auf dem Bildschirm.
+4. "Zahl" ist ein Ausdruck.
+   Er repraesentiert die Zahl "Zahl".
+5. "Name" ist ein Ausdruck.
+   Er repraesentiert den momentanen Wert der Variablen "Name".
+6. Das Konstrukt "ausdruck1 + ausdruck2" ist ein Ausdruck.
+   Er repraesentiert die Summe aus dem Wert von "ausdruck1"
+   und dem Wert von "ausdruck2".
+7. Genauso wie 6., aber Differenz statt Summe.
+8. Genauso wie 6., aber Produkt statt Summe.
+9. Genauso wie 6., aber Quotient statt Summe.
+
+Hier ist ein Beispielprogramm in SLPL:
+
+x := 5 + 3 ; Zeige(x) ; y := 7 * x - 2 ; Zeige(y / 2)
+
+Wenn man dieses Programm laufen laesst, erzeugt es folgende Ausgabe:
+
+8 27
+
+Wie sollte man ein solches Programm im Rechner repraesentieren?
+Eine Moeglichkeit waere der Quelltext; damit ist aber nicht so
+einfach umzugehen. Viel zweckmaessiger ist es, Programme als Baeume
+darzustellen. Dazu wird einfach fuer jeden Knoten ein entsprechender
+Konstruktor aufgerufen. So wuerde sich z.B. die Folge "Zeige(5) ; Zeige(x)"
+darstellen lassen als "Folge(Ausgabe(Literal(5)), Ausgabe(Variable("x")))".
+Sie sehen daran, dass jede Anwendung einer der obigen 9 Regeln einem
+Aufruf des entsprechenden Knotenkonstruktors entspricht.
+
+Unser kleines Beispielprogramm von oben sieht damit so aus:
+
+Folge(
+  Zuweisung(
+    "x",
+    Summe(
+      Literal(5),
+      Literal(3))),
+  Folge(
+    Ausgabe(
+      Variable("x")),
+    Folge(
+      Zuweisung(
+        "y",
+        Differenz(
+          Produkt(
+            Literal(7),
+            Variable("x")),
+          Literal(2))),
+      Ausgabe(
+        Quotient(
+          Variable("y"),
+          Literal(2))))))
+
+Die automatische Umwandlung vom Quelltext in die Baumdarstellung ist
+Gegenstand der ersten Haelfte der Compilerbauvorlesung und wird hier
+NICHT behandelt. Stattdessen geben wir unsere kleinen SLPL-Programme
+direkt in der Baumkonstruktor-Darstellung (und damit als C-Programm)
+an.
+
+
+Vorgegebene Dateien
+-------------------
+
+README   - die Beschreibung, die Sie gerade lesen
+Makefile - ein Makefile zur automatischen Uebersetzung
+common.h - haeufig gebrauchte Definitionen
+utils.c  - haeufig gebrauchte Hilfsfunktionen
+utils.h  - Interface zu utils.c
+slpl.c   - die Knotenkonstruktoren
+slpl.h   - Interface zu slpl.c
+prog.c   - unser Beispielprogramm
+prog.h   - Interface zu prog.c
+main.c   - das Hauptprogramm: hier muessen Sie taetig werden!
+table.c  - die Symboltabelle: hier muessen Sie taetig werden!
+table.h  - Interface zu table.c
+
+
+Aufgaben
+--------
+
+1. Machen Sie sich mit den vorgegebenen Dateien vertraut.
+   Sie muessen deren Inhalte verstehen!
+
+2. Schreiben Sie eine rekursive Funktion void zeigeBaum(Knoten *baum);
+   die eine lesbare Darstellung des gesamtem an "baum" haengenden Baums
+   erzeugt. Das Ergebnis kann dann z.B. so aehnlich wie der oben gezeigte
+   Quelltext aussehen.
+
+3. Schreiben Sie eine rekursive Funktion void interpretiere(Knoten *baum);
+   die das an "baum" haengende Programm interpretiert. Sie konstruieren
+   dazu am besten zwei Hilfsfunktionen, je eine fuer Anweisungen und eine
+   fuer Ausdruecke:
+   Tabelle *interpretAnweisung(Knoten *baum, Tabelle *tabelle);
+   int interpretAusdruck(Knoten *baum, Tabelle *tabelle);
+   "baum" ist das zu interpretierende (Teil-)Programm,
+   "tabelle" ist eine Tabelle der zu diesem Zeitpunkt bekannten
+   Variablen und ihrer Werte.
+   Ergaenzen Sie zu diesem Zweck zunaechst die nicht ausprogrammierten
+   Funktionen im Tabellen-Modul. Vorschlag: Verwenden Sie eine lineare
+   Liste von Tabelleneintraegen (auch wenn das nicht besonders effizient
+   ist).
+   Bei der Interpretation eines Programms wird jedesmal bei einer Zuweisung
+   die Tabelle auf den neuesten Stand gebracht und die geaenderte Tabelle
+   zurueckgegeben; jedesmal bei der Benutzung einer Variablen wird ihr Wert
+   in der momentan gueltigen Tabelle aufgesucht.
+   Ihr Interpreter sollte eine Fehlermeldung ausgeben, falls der Wert einer
+   nichtinitialisierten Variablen gebraucht wird.
+

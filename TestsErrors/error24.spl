@@ -1,0 +1,9 @@
+type t = array[2] of int;
+
+proc main() {
+  var a: t;
+  var b: t;
+
+  a := b; // Error: assignment requires integer variable in line 7
+}
+

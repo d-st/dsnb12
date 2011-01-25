@@ -1,0 +1,6 @@
+proc main() {
+  var a: int;
+  
+  if(a+1); // Error: 'if' test expression must be of type boolean in line 4
+}
+

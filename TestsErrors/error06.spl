@@ -1,0 +1,6 @@
+proc x() {}
+proc x() {} // Error: redeclaration of 'x' in line 2
+
+proc main() {
+}
+

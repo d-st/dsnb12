@@ -1,0 +1,11 @@
+type A = array[2] of int;
+type B = array[2] of A;
+type C = array[2] of B;
+type D = array[2] of C;
+
+proc main() {
+  var _a: D;
+
+  _a[1][2][1][2] := 1;
+}
+

@@ -1,0 +1,8 @@
+type t = array[2] of int;
+
+proc main() {
+  var a: t;
+  var i: int;
+  i := a+2; // Error: expression combines different types
+}
+

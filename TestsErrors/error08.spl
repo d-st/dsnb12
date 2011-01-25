@@ -1,0 +1,6 @@
+proc main() {
+  var a: array[2] of int;
+  
+  a[1<2] := 1; // Error: illegal indexing with a non-integer in line 4
+}
+

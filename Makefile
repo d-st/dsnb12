@@ -3,11 +3,11 @@
 #
 
 CC = gcc
-CFLAGS = -Wall -Wno-unused -g
+CFLAGS = -Wall -Wunused -g
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = main.c utils.c sym.c absyn.c parser.tab.c lex.yy.c
+SRCS = main.c utils.c sym.c absyn.c parser.tab.c lex.yy.c semant.c table.c types.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = spl
 
@@ -34,7 +34,7 @@ tests:		all
 		done
 		@echo
 
-mytests:	all
+check:	all
 		@for i in Tests/*.spl ; do \
 		  echo $$i:; \
 		  echo -n " - testing clean parsing: "; \
@@ -49,6 +49,23 @@ mytests:	all
 		  ./Tests/spl-reference --absyn $$i o > absyn-ref.txt ; \
 		  diff -q absyn-my.txt absyn-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm absyn-my.txt absyn-ref.txt ; \
+		  echo -n " - reference testing symbol tables: "; \
+		  ./$(BIN) --tables $$i | ./Tests/sort-table-output.pl > tables-my.txt ; \
+		  ./Tests/spl-reference --tables $$i o | ./Tests/sort-table-output.pl > tables-ref.txt ; \
+		  diff -q tables-my.txt tables-ref.txt>/dev/null && echo "ok" || echo "failed"; \
+		  rm -f tables-my.txt tables-ref.txt o; \
+		done
+		@echo
+
+check-errors:	all
+		@for i in TestsErrors/*.spl ; do \
+		  echo -n $$i:; \
+		  ./$(BIN) $$i > errors-my.txt ; \
+		  ./Tests/spl-reference $$i o > errors-ref.txt ; \
+		  diff -q errors-my.txt errors-ref.txt>/dev/null && echo " ok" || (echo " failed"; \
+		  ./$(BIN) $$i; \
+		  ./Tests/spl-reference $$i o); \
+		  rm errors-my.txt errors-ref.txt; \
 		done
 		@echo
 
@@ -58,8 +75,8 @@ depend:		parser.tab.c lex.yy.c
 		$(CC) $(CFLAGS) -MM $(SRCS) > depend.mak
 
 clean:
-		rm -f *~ *.o
-		rm -f Tests/*~
+		rm -f *~ *.o o
+		rm -f Tests/*~ Tests/o
 
 dist-clean:	clean
 		rm -f $(BIN) parser.tab.c parser.tab.h lex.yy.c depend.mak

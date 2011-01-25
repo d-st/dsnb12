@@ -1,3 +1,4 @@
 //
 // test00.spl -- mein erstes SPL-Programm
 //
+proc main(){}
