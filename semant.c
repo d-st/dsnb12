@@ -258,7 +258,7 @@ Type *checkVarDec(Absyn * node, Table * symtab)
 	Type *type;
 	Entry *entry;
 	type = checkNode(node->u.typeDec.ty, symtab);
-	entry = newVarEntry(type, FALSE);
+	entry = newVarEntry(type, FALSE, ENTRY_SOURCE_LOCVAR);
 	if (enter(symtab, node->u.typeDec.name, entry) == NULL) {
 		error("redeclaration of '%s' in line %d",
 		      symToString(node->u.typeDec.name), node->line);
@@ -430,7 +430,7 @@ void enter_proc_decs(Absyn * program, Table * symtab)
 						(tmp->u.decList.head->u.
 						 parDec.ty, symtab),
 						tmp->u.decList.head->u.
-						parDec.isRef);
+						parDec.isRef, ENTRY_SOURCE_PARAM);
 				enter(localSymtab, name, entry);
 				tmp = tmp->u.decList.tail;
 			}

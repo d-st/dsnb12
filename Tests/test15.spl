@@ -1,5 +1,6 @@
 
 proc test(a:int,x:int) {
+  var y: int;
 }
 
 proc main() {

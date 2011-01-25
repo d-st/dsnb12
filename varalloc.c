@@ -16,27 +16,7 @@
 #include "varalloc.h"
 
 #define PREDEF_PROC (-1)
-
-static int local_offset;
-
-int compute_localvar_size(Bintree *bintree) {
-  int size;
-  if (bintree == NULL) {
-    return 0;
-  }
-  if(bintree->entry->kind != ENTRY_KIND_VAR) {
-    // SPL does not support nested definitions, so should never occur
-    error("internal compiler error: nested definitions");
-  }
-
-  size = bintree->entry->u.varEntry.type->size;
-  bintree->entry->u.varEntry.offset = local_offset;
-  local_offset += size;
-
-  size += compute_localvar_size(bintree->left);
-  size += compute_localvar_size(bintree->right);
-  return size;
-}
+#define LEAF_PROC   (-1)
 
 static void compute_proc_arg_offsets(Entry *proc) {
   ParamTypes *params;
@@ -48,14 +28,14 @@ static void compute_proc_arg_offsets(Entry *proc) {
   params = proc->u.procEntry.paramTypes;
   while(!params->isEmpty) {
     params->offset = size;
-    size += params->type->size;
+    size += params->isRef?REF_BYTE_SIZE:params->type->size;
     params = params->next;
   }
   proc->u.procEntry.size_args_in = size;
 }
 
 static int compute_proc_localvars(Table *t, Absyn *aref) {
-  if(aref == NULL) return -1; // build in proc
+  if(aref == NULL) return PREDEF_PROC; // build in proc
   Absyn *a = aref->u.procDec.decls;
   Absyn *b;
   Entry *e;
@@ -65,8 +45,6 @@ static int compute_proc_localvars(Table *t, Absyn *aref) {
     b = a->u.decList.head;
     if(b->type == ABSYN_VARDEC) {
       e = lookup(t, b->u.varDec.name);
-showTable(t);
-printf("%s %p\n", symToString(b->u.varDec.name), e);//->u.varEntry.type);
       size = e->u.varEntry.type->size;
       sum_size += size;
       e->u.varEntry.offset = sum_size;
@@ -76,24 +54,66 @@ printf("%s %p\n", symToString(b->u.varDec.name), e);//->u.varEntry.type);
   return sum_size;
 }
 
-static int compute_proc_out_sizes(Table *t, boolean *is_leaf, Absyn *aref) {
-  int max_size = 0;
-  int size;
-  if(aref == NULL) return -1; // build in proc
-  Absyn *a = aref->u.procDec.body;
-  Absyn *b;
-
-  *is_leaf  = TRUE;
-  while(a && !a->u.stmList.isEmpty) {
-    b = a->u.stmList.head;
-    if(b->type == ABSYN_CALLSTM) {
-      *is_leaf = FALSE;
-      size = lookup(t, b->u.callStm.name)->u.procEntry.size_args_in;
-      max_size = size>max_size?size:max_size;
-    }
-    a = a->u.stmList.tail;
+static void compute_proc_param_offsets(Bintree *bintree, boolean reset) {
+  static int offset = 0;
+  if(reset) offset = 0;
+  if(bintree == NULL) return;
+  if(bintree->entry->source == ENTRY_SOURCE_PARAM) {
+    bintree->entry->u.varEntry.offset = offset;
+    if(bintree->entry->u.varEntry.isRef)
+      offset += REF_BYTE_SIZE;
+    else
+      offset += bintree->entry->u.varEntry.type->size;
   }
-  return max_size;
+  compute_proc_param_offsets(bintree->left,  FALSE);
+  compute_proc_param_offsets(bintree->right, FALSE);
+}
+
+
+static int compute_proc_out_sizes(Table *t, Absyn *a) {
+  boolean is_leaf = TRUE;
+  int max_size = 0;
+  int size = LEAF_PROC, size2;
+  if(a == NULL) return PREDEF_PROC; // build in proc
+
+  switch(a->type) {
+    case ABSYN_PROCDEC:
+      size = compute_proc_out_sizes(t, a->u.procDec.body);
+      break;
+    case ABSYN_STMLIST:
+      if(a->u.stmList.isEmpty) break;
+      size = compute_proc_out_sizes(t, a->u.stmList.head);
+      size2 = compute_proc_out_sizes(t, a->u.stmList.tail);
+      if(size2>size) size=size2;
+      break;
+    case ABSYN_CALLSTM:
+      size = lookup(t, a->u.callStm.name)->u.procEntry.size_args_in;
+//printf("looked up %s() as size %d\n", symToString(a->u.callStm.name), size);
+      break;
+    case ABSYN_EMPTYSTM: break;
+    case ABSYN_COMPSTM:
+      size = compute_proc_out_sizes(t, a->u.compStm.stms);
+      break;
+    case ABSYN_WHILESTM: 
+      size = compute_proc_out_sizes(t, a->u.whileStm.body);
+      break;
+    case ABSYN_IFSTM:
+      size = compute_proc_out_sizes(t, a->u.ifStm.thenPart);
+      size2 = compute_proc_out_sizes(t, a->u.ifStm.elsePart);
+      if(size2>size) size=size2;
+      break;
+    default:
+// printf("ICE: unhandled statement #%d\n", a->type);
+      break;
+  }
+  if(size != LEAF_PROC) is_leaf = FALSE;
+  max_size = size>max_size?size:max_size;
+/*
+if(a && a->type == ABSYN_PROCDEC)
+printf("%s():%s, size:%d\n", symToString(a->u.procDec.name),is_leaf?"leaf":"caller",max_size);
+*/
+
+  return is_leaf?LEAF_PROC:max_size;
 }
 
 static void compute_procs(Table *t, Bintree *bintree) {
@@ -103,10 +123,11 @@ static void compute_procs(Table *t, Bintree *bintree) {
   if(bintree->entry->kind == ENTRY_KIND_PROC) {
     // compute arguments, parameters 
     compute_proc_arg_offsets(bintree->entry);
+    compute_proc_param_offsets(bintree->entry->u.procEntry.localTable->bintree, TRUE);
     // compute local vars
-    compute_proc_localvars(t, bintree->entry->aref);
+    bintree->entry->u.procEntry.size_local_vars = compute_proc_localvars(bintree->entry->u.procEntry.localTable, bintree->entry->aref);
     // compute outgoing sizes
-    bintree->entry->u.procEntry.size_args_out = compute_proc_out_sizes(t, &bintree->entry->u.procEntry.is_leaf, bintree->entry->aref);
+    bintree->entry->u.procEntry.size_args_out = compute_proc_out_sizes(t, bintree->entry->aref);
   }
   compute_procs(t, bintree->left);
   compute_procs(t, bintree->right);
@@ -121,12 +142,28 @@ static void show_args(ParamTypes *paramTypes) {
   }
 }
 
-static void show_vars(Absyn *aref) {
-/*
-  if(aref->u.procDec.decls);
-  printf("var '%s': fp - %d\n", symToString(bintree->sym), bintree->entry->u.varEntry.offset);
-TODO
-*/
+static void show_parms(Bintree *bintree) {
+  if (bintree == NULL) {
+    return;
+  }
+  if(bintree->entry->kind == ENTRY_KIND_VAR
+    && bintree->entry->source == ENTRY_SOURCE_PARAM) {
+    printf("param '%s': fp + %d\n", symToString(bintree->sym), bintree->entry->u.varEntry.offset);
+  }
+  show_parms(bintree->left);
+  show_parms(bintree->right);
+}
+
+static void show_vars(Bintree *bintree) {
+  if (bintree == NULL) {
+    return;
+  }
+  if(bintree->entry->kind == ENTRY_KIND_VAR
+    && bintree->entry->source == ENTRY_SOURCE_LOCVAR) {
+    printf("var '%s': fp - %d\n", symToString(bintree->sym), bintree->entry->u.varEntry.offset);
+  }
+  show_vars(bintree->left);
+  show_vars(bintree->right);
 }
 
 static void show_VarAlloc(Bintree *bintree) {
@@ -138,7 +175,8 @@ static void show_VarAlloc(Bintree *bintree) {
     printf("\nVariable allocation for procedure '%s'\n", symToString(bintree->sym));
     show_args(bintree->entry->u.procEntry.paramTypes);
     printf("size of argument area = %d\n", bintree->entry->u.procEntry.size_args_in);
-    show_vars(bintree->entry->aref);
+    show_parms(bintree->entry->u.procEntry.localTable->bintree);
+    show_vars(bintree->entry->u.procEntry.localTable->bintree);
     printf("size of localvar area = %d\n", bintree->entry->u.procEntry.size_local_vars);
     printf("size of outgoing area = %d\n", bintree->entry->u.procEntry.size_args_out);
   }

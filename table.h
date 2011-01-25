@@ -12,9 +12,12 @@
 #define ENTRY_KIND_VAR		1
 #define ENTRY_KIND_PROC		2
 
+#define ENTRY_SOURCE_LOCVAR	0
+#define ENTRY_SOURCE_PARAM	1
 
 typedef struct {
   int kind;
+  int source;
   Absyn *aref;
   union {
     struct {
@@ -53,7 +56,7 @@ typedef struct table {
 
 
 Entry *newTypeEntry(Type *type);
-Entry *newVarEntry(Type *type, boolean isRef);
+Entry *newVarEntry(Type *type, boolean isRef, int source);
 Entry *newProcEntry(ParamTypes *paramTypes, Table *localTable, Absyn *aref);
 
 Table *newTable(Table *upperLevel);

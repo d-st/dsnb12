@@ -149,7 +149,8 @@ Sym *newSym(char *string) {
 
 
 char *symToString(Sym *sym) {
-  return sym->string;
+  if(sym) return sym->string;
+  return 0;
 }
 
 

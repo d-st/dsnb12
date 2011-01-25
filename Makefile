@@ -54,6 +54,11 @@ check:	all
 		  ./Tests/spl-reference --tables $$i o | ./Tests/sort-table-output.pl > tables-ref.txt ; \
 		  diff -q tables-my.txt tables-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm -f tables-my.txt tables-ref.txt o; \
+		  echo -n " - reference testing variable allocation: "; \
+		  ./$(BIN) --vars $$i | ./Tests/sort-vars-output.pl > vars-my.txt ; \
+		  ./Tests/spl-reference --vars $$i o | ./Tests/sort-vars-output.pl > vars-ref.txt ; \
+		  diff -q vars-my.txt vars-ref.txt>/dev/null && echo "ok" || echo "failed"; \
+		  rm -f vars-my.txt vars-ref.txt o; \
 		done
 		@echo
 

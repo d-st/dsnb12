@@ -24,11 +24,12 @@ Entry *newTypeEntry(Type *type) {
 }
 
 
-Entry *newVarEntry(Type *type, boolean isRef) {
+Entry *newVarEntry(Type *type, boolean isRef, int source) {
   Entry *entry;
 
   entry = (Entry *) allocate(sizeof(Entry));
   entry->kind = ENTRY_KIND_VAR;
+  entry->source = source;
   entry->u.varEntry.type = type;
   entry->u.varEntry.isRef = isRef;
   return entry;
