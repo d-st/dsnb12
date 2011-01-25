@@ -13,8 +13,9 @@
 #include "absyn.h"
 #include "table.h"
 #include "semant.h"
+#include "varalloc.h"
 
-boolean __debug = FALSE;
+static boolean local_debug = FALSE;
 
 // modulglobale (interne) primitive typen
 Type *builtinType_int, *builtinType_bool;
@@ -286,7 +287,7 @@ Type *checkProcDec(Absyn * node, Table * symtab)
 	checkNode(node->u.procDec.body, localSymtab);
 
 	// optional debug output
-	if (__debug) {
+	if (local_debug) {
 		printf("symbol table at end of procedure '%s':\n",
 		       symToString(node->u.procDec.name));
 		showTable(localSymtab);
@@ -413,7 +414,7 @@ void enter_proc_decs(Absyn * program, Table * symtab)
 
 			// enter proc into global symbol table
 			localSymtab = newTable(symtab);
-			entry = newProcEntry(paramTypes, localSymtab);
+			entry = newProcEntry(paramTypes, localSymtab, node);
 
 			if (enter(symtab, node->u.procDec.name, entry) == NULL) {
 				error("redeclaration of '%s' in line %d",
@@ -450,46 +451,46 @@ Table *check(Absyn * program, boolean showSymbolTables)
 	globalTable = newTable(NULL);
 
 	if (showSymbolTables) {
-		__debug = TRUE;
+	  local_debug = TRUE;
 	}
 
 	/* generate built-in types */
-	builtinType_int = newPrimitiveType("int");
-	builtinType_bool = newPrimitiveType("bool");
+	builtinType_int  = newPrimitiveType("int",  INT_BYTE_SIZE);
+	builtinType_bool = newPrimitiveType("bool", BOOL_BYTE_SIZE);
 
 	Entry *builtinProc_exit =
-	    newProcEntry(emptyParamTypes(), newTable(globalTable));
+	    newProcEntry(emptyParamTypes(), newTable(globalTable), NULL);
 	Entry *builtinProc_time =
 	    newProcEntry(newParamTypes
 			 (builtinType_int, TRUE, emptyParamTypes()),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_readi =
 	    newProcEntry(newParamTypes
 			 (builtinType_int, TRUE, emptyParamTypes()),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_readc =
 	    newProcEntry(newParamTypes
 			 (builtinType_int, TRUE, emptyParamTypes()),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_printi =
 	    newProcEntry(newParamTypes
 			 (builtinType_int, FALSE, emptyParamTypes()),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_printc =
 	    newProcEntry(newParamTypes
 			 (builtinType_int, FALSE, emptyParamTypes()),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_clearAll =
 	    newProcEntry(newParamTypes
 			 (builtinType_int, FALSE, emptyParamTypes()),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_setPixel =
 	    newProcEntry(newParamTypes(builtinType_int, FALSE,
 				       newParamTypes(builtinType_int, FALSE,
 						     newParamTypes
 						     (builtinType_int, FALSE,
 						      emptyParamTypes()))),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_drawCircle =
 	    newProcEntry(newParamTypes(builtinType_int, FALSE,
 				       newParamTypes(builtinType_int, FALSE,
@@ -498,7 +499,7 @@ Table *check(Absyn * program, boolean showSymbolTables)
 						      newParamTypes
 						      (builtinType_int, FALSE,
 						       emptyParamTypes())))),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 	Entry *builtinProc_drawLine =
 	    newProcEntry(newParamTypes(builtinType_int, FALSE,
 				       newParamTypes(builtinType_int, FALSE,
@@ -509,7 +510,7 @@ Table *check(Absyn * program, boolean showSymbolTables)
 						       newParamTypes
 						       (builtinType_int, FALSE,
 							emptyParamTypes()))))),
-			 newTable(globalTable));
+			 newTable(globalTable), NULL);
 
 	/* setup global symbol table */
 	enter(globalTable, newSym("int"), newTypeEntry(builtinType_int));

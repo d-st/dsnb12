@@ -13,6 +13,7 @@
 
 typedef struct type {
   int kind;
+  int size;
   union {
     struct {
       char *printName;
@@ -29,11 +30,12 @@ typedef struct paramtypes {
   boolean isEmpty;
   Type *type;
   boolean isRef;
+  int offset;
   struct paramtypes *next;
 } ParamTypes;
 
 
-Type *newPrimitiveType(char *printName);
+Type *newPrimitiveType(char *printName, int size);
 Type *newArrayType(int size, Type *baseType);
 
 ParamTypes *emptyParamTypes(void);

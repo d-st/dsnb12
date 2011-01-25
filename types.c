@@ -12,11 +12,12 @@
 #include "types.h"
 
 
-Type *newPrimitiveType(char *printName) {
+Type *newPrimitiveType(char *printName, int size) {
   Type *type;
 
   type = (Type *) allocate(sizeof(Type));
   type->kind = TYPE_KIND_PRIMITIVE;
+  type->size = size;
   type->u.primitiveType.printName = printName;
   return type;
 }
@@ -27,6 +28,7 @@ Type *newArrayType(int size, Type *baseType) {
 
   type = (Type *) allocate(sizeof(Type));
   type->kind = TYPE_KIND_ARRAY;
+  type->size = size * baseType->size;
   type->u.arrayType.size = size;
   type->u.arrayType.baseType = baseType;
   return type;

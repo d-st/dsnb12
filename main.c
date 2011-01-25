@@ -16,6 +16,7 @@
 #include "parser.h"
 #include "table.h"
 #include "semant.h"
+#include "varalloc.h"
 
 
 #define VERSION		"1.1"
@@ -33,6 +34,7 @@ static void help(char *myself) {
   printf("  --tokens         show stream of tokens\n");
   printf("  --absyn          show abstract syntax\n");
   printf("  --tables         show symbol tables\n");
+  printf("  --vars           show variable allocation\n");
   printf("  --version        show compiler version\n");
   printf("  --help           show this help\n");
 }
@@ -44,6 +46,7 @@ int main(int argc, char *argv[]) {
   boolean optionTokens;
   boolean optionAbsyn;
   boolean optionTables;
+  boolean optionVars;
   int token;
   Table *globalTable;
 
@@ -52,6 +55,7 @@ int main(int argc, char *argv[]) {
   optionTokens = FALSE;
   optionAbsyn = FALSE;
   optionTables = FALSE;
+  optionVars = FALSE;
   for (i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
       /* option */
@@ -63,6 +67,9 @@ int main(int argc, char *argv[]) {
       } else
       if (strcmp(argv[i], "--tables") == 0) {
         optionTables = TRUE;
+      } else
+      if (strcmp(argv[i], "--vars") == 0) {
+        optionVars = TRUE;
       } else
       if (strcmp(argv[i], "--version") == 0) {
         version(argv[0]);
@@ -105,5 +112,6 @@ int main(int argc, char *argv[]) {
     exit(0);
   }
   globalTable = check(progTree, optionTables);
+  allocVars(progTree, globalTable, optionVars);
   return 0;
 }

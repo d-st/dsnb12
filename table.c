@@ -35,11 +35,12 @@ Entry *newVarEntry(Type *type, boolean isRef) {
 }
 
 
-Entry *newProcEntry(ParamTypes *paramTypes, Table *localTable) {
+Entry *newProcEntry(ParamTypes *paramTypes, Table *localTable, Absyn *aref) {
   Entry *entry;
 
   entry = (Entry *) allocate(sizeof(Entry));
   entry->kind = ENTRY_KIND_PROC;
+  entry->aref = aref;
   entry->u.procEntry.paramTypes = paramTypes;
   entry->u.procEntry.localTable = localTable;
   return entry;
