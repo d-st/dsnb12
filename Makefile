@@ -38,37 +38,42 @@ check:	all
 		@for i in Tests/*.spl ; do \
 		  echo $$i:; \
 		  echo -n " - testing clean parsing: "; \
-		  ./$(BIN) $$i>/dev/null && echo "ok" || echo "failed"; \
+		  ./$(BIN) $$i o >/dev/null && echo "ok" || echo "failed"; \
 		  echo -n " - reference testing tokens: "; \
-		  ./$(BIN) --tokens $$i > tokens-my.txt ; \
+		  ./$(BIN) --tokens $$i o > tokens-my.txt ; \
 		  ./Tests/spl-reference --tokens $$i o > tokens-ref.txt ; \
 		  diff -q tokens-my.txt tokens-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm tokens-my.txt tokens-ref.txt ; \
 		  echo -n " - reference testing abstract syntax: "; \
-		  ./$(BIN) --absyn $$i > absyn-my.txt ; \
+		  ./$(BIN) --absyn $$i o > absyn-my.txt ; \
 		  ./Tests/spl-reference --absyn $$i o > absyn-ref.txt ; \
 		  diff -q absyn-my.txt absyn-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm absyn-my.txt absyn-ref.txt ; \
 		  echo -n " - reference testing symbol tables: "; \
-		  ./$(BIN) --tables $$i | ./Tests/sort-table-output.pl > tables-my.txt ; \
+		  ./$(BIN) --tables $$i o | ./Tests/sort-table-output.pl > tables-my.txt ; \
 		  ./Tests/spl-reference --tables $$i o | ./Tests/sort-table-output.pl > tables-ref.txt ; \
 		  diff -q tables-my.txt tables-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm -f tables-my.txt tables-ref.txt o; \
 		  echo -n " - reference testing variable allocation: "; \
-		  ./$(BIN) --vars $$i | ./Tests/sort-vars-output.pl > vars-my.txt ; \
+		  ./$(BIN) --vars $$i o | ./Tests/sort-vars-output.pl > vars-my.txt ; \
 		  ./Tests/spl-reference --vars $$i o | ./Tests/sort-vars-output.pl > vars-ref.txt ; \
 		  diff -q vars-my.txt vars-ref.txt>/dev/null && echo "ok" || echo "failed"; \
 		  rm -f vars-my.txt vars-ref.txt o; \
+		  echo -n " - comparing assembler output: "; \
+		  ./$(BIN) $$i o-my.txt ; \
+		  ./Tests/spl-reference $$i o-ref.txt ; \
+		  diff -q o-my.txt o-ref.txt>/dev/null && echo "ok" || echo "failed"; \
+		  rm -f o-my.txt o-ref.txt; \
 		done
 		@echo
 
 check-errors:	all
 		@for i in TestsErrors/*.spl ; do \
 		  echo -n $$i:; \
-		  ./$(BIN) $$i > errors-my.txt ; \
+		  ./$(BIN) $$i o > errors-my.txt ; \
 		  ./Tests/spl-reference $$i o > errors-ref.txt ; \
 		  diff -q errors-my.txt errors-ref.txt>/dev/null && echo " ok" || (echo " failed"; \
-		  ./$(BIN) $$i; \
+		  ./$(BIN) $$i; o \
 		  ./Tests/spl-reference $$i o); \
 		  rm errors-my.txt errors-ref.txt; \
 		done
