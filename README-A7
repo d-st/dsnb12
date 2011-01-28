@@ -1,0 +1,81 @@
+Programmieraufgabe
+==================
+
+Problemstellung
+---------------
+
+Programmierung des Codegenerators sowie gruendliches
+Testen aller Module des Compilers im Zusammenspiel.
+
+
+Vorgegebene Dateien
+-------------------
+
+README          -  die Beschreibung, die Sie gerade lesen
+main.c          -  das Hauptprogramm des entstehenden Compilers
+codegen.h       -  Interface zum Codegenerator
+codegen.c       -  der Codegenerator: das ist Ihre Aufgabe
+
+
+Aufgaben
+--------
+
+Zunaechst ein Hinweis: Der Code, den Ihr Compiler erzeugt, muss in
+keiner Hinsicht so aussehen, wie der Code der Referenzimplementierung.
+Sie duerfen sich zwar gerne diesen Code ansehen; versuchen Sie aber
+nicht, unter allen Umstaenden gleichen Code zu erzeugen. Wichtigstes
+Ziel in dieser Phase ist korrekter Code, d.h. Code, der genau das
+Verhalten zeigt, das laut Sprachdefinition von ihm gefordert wird.
+
+1. Programmieren Sie einen rekursiven Durchgang durch die abstrakte
+   Syntax. Sie koennen zur Vereinfachung der folgenden Aufgabenteile
+   an jedem besuchten Knoten einen kurzen String ausgeben, der den
+   Knotentyp benennt (in Postorder-Reihenfolge). Wenn Sie diesen als
+   Assembler-Kommentar (eingeleitet mit einem Semikolon) "tarnen",
+   kann Ihre Ausgabe sogar in der erzeugten Assembler-Ausgabedatei
+   stehen bleiben.
+
+2. Ergaenzen Sie nun die Traversierungsfunktionen der einzelnen
+   Knotentypen um die Ausgabe von ECO32-Assemblercode. Entwerfen
+   Sie zunaechst jeweils ein ganz kurzes SPL-Programm, das den
+   ins Auge gefassten Knotentyp beim Uebersetzen produziert (so
+   etwas sollte eigentlich aus Loesungen zu frueher gestellten
+   Aufgaben schon zur Verfuegung stehen). Programmieren Sie dann
+   die Codegenerierung fuer diesen Knotentyp. Pruefen Sie zuletzt,
+   ob der erzeugte Code fuer Ihr SPL-Programm korrekt ist.
+   Hier ist ein Vorschlag fuer die Reihenfolge der Knotentypen:
+   - StmList (ausser dem rekursiven Abstieg ist hier nichts zu tun)
+   - IntExp
+   - OpExp (nur Arithmetik, keine Vergleiche)
+   - SimpleVar (ohne Beruecksichtigung von Referenzvariablen)
+   - VarExp
+   - AssignStm
+   - ArrayVar (nicht vergessen: Indexgrenzen-Ueberpruefung, s.u.)
+   - WhileStm
+   - OpExp (nur Vergleiche, keine Arithmetik)
+   - IfStm
+   - CallStm (ohne Beruecksichtigung von Referenzvariablen)
+   - ProcDec mit folgenden Teilaufgaben:
+     Framegroesse berechnen
+     Prozedur-Prolog ausgeben
+     Code fuer Prozedurkoerper erzeugen
+     Prozedur-Epilog ausgeben
+   Hinweise:
+   - Falls die Indexgrenzen-Ueberpruefung fehlschlaegt, lassen
+     Sie den Code zum Label "_indexError" verzweigen. Das ist eine
+     Bibliotheksfunktion, die das Programm mit einer Fehlermeldung
+     abbricht.
+   - Denken Sie an die Ueberpruefung, ob genuegend Register
+     fuer Hilfsvariable zur Verfuegung stehen. Brechen Sie die
+     Uebersetzung ggf. mit einer geeigneten Fehlermeldung ab.
+
+3. Untersuchen Sie, an welcher Stelle ein Programm, das Referenz-
+   variablen benutzt, noch fehlerhaft ist. Ergaenzen Sie den Code-
+   generator so, dass auch SPL-Programme mit Referenzvariablen
+   richtig uebersetzt werden.
+
+4. Ueberzeugen Sie sich von der Korrektheit des erzeugten Codes
+   fuer die etwas groesseren Testprogramme (Queens, Sierpinski,
+   Sortieren eines Arrays).
+
+5. Glueckwunsch: Ihr SPL-Compiler ist fertig!
