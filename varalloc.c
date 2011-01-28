@@ -15,9 +15,6 @@
 #include "table.h"
 #include "varalloc.h"
 
-#define PREDEF_PROC (-1)
-#define LEAF_PROC   (-1)
-
 static void compute_proc_arg_offsets(Entry *proc) {
   ParamTypes *params;
   int size = 0;
@@ -88,7 +85,6 @@ static int compute_proc_out_sizes(Table *t, Absyn *a) {
       break;
     case ABSYN_CALLSTM:
       size = lookup(t, a->u.callStm.name)->u.procEntry.size_args_in;
-//printf("looked up %s() as size %d\n", symToString(a->u.callStm.name), size);
       break;
     case ABSYN_EMPTYSTM: break;
     case ABSYN_COMPSTM:
@@ -103,16 +99,10 @@ static int compute_proc_out_sizes(Table *t, Absyn *a) {
       if(size2>size) size=size2;
       break;
     default:
-// printf("ICE: unhandled statement #%d\n", a->type);
       break;
   }
   if(size != LEAF_PROC) is_leaf = FALSE;
   max_size = size>max_size?size:max_size;
-/*
-if(a && a->type == ABSYN_PROCDEC)
-printf("%s():%s, size:%d\n", symToString(a->u.procDec.name),is_leaf?"leaf":"caller",max_size);
-*/
-
   return is_leaf?LEAF_PROC:max_size;
 }
 

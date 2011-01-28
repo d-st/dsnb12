@@ -1,4 +1,6 @@
-proc f_call(ref x: int, y: int) {}
+proc f_call(ref x: int, y: int) {
+  x := y;
+}
 proc g_call() {}
 
 proc main() {

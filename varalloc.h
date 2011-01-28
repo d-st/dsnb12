@@ -11,6 +11,8 @@
 #define BOOL_BYTE_SIZE	4	/* size of a bool in bytes */
 #define REF_BYTE_SIZE	4	/* size of an address in bytes */
 
+#define PREDEF_PROC (-1)
+#define LEAF_PROC   (-1)
 
 void allocVars(Absyn *program, Table *globalTable, boolean showVarAlloc);
 

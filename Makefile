@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wunused -g
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = main.c utils.c sym.c absyn.c parser.tab.c lex.yy.c semant.c table.c types.c varalloc.c
+SRCS = main.c utils.c sym.c absyn.c parser.tab.c lex.yy.c semant.c table.c types.c varalloc.c codegen.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = spl
 
